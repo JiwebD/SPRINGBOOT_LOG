@@ -1,0 +1,622 @@
+------------------------------
+개요
+------------------------------
+스프링 부트란?
+  Spring Boot는 Spring Framework 기반의 웹 애플리케이션을 쉽고 빠르게 개발할 수 있도록 지원하는 프레임워크이다.
+  복잡한 설정 없이 독립 실행형 애플리케이션을 빠르게 만들 수 있는 환경을 제공한다.
+
+  요약: 설정을 최소화하고 빠르게 개발 가능한 스프링 기반 웹 애플리케이션 프레임워크
+
+
+
+특징
+ 1. 자동 설정 (Auto Configuration)
+ 대부분의 설정을 자동으로 구성
+ XML 설정 없이 application.properties 또는 application.yml로 간단히 설정 가능
+
+ 2. 내장 웹 서버 제공
+ Tomcat, Jetty, Undertow 등 웹 서버가 내장되어 있음 
+ 별도의 WAS 설치 없이 java -jar 명령으로 실행 가능
+
+ 3. 독립 실행형 애플리케이션
+ main() 메서드를 포함한 클래스에서 바로 실행 가능
+ 실행 파일(JAR) 하나만으로 서버 구동 가능
+
+ 4. 스타터(Starter) 의존성 제공
+ 기능별로 필요한 라이브러리를 미리 묶어둔 패키지를 제공
+ 예: spring-boot-starter-web, spring-boot-starter-data-jpa 등
+
+ 5. Spring 생태계와의 완벽한 통합
+ Spring Security, Spring Data, Spring Cloud 등과 자연스럽게 통합 가능
+
+ 6. 운영 환경 지원
+ Spring Boot Actuator를 통해 상태 확인, 모니터링, 로그 관리, 메트릭 수집 가능
+
+
+버전 차이점.
+2.7.x 버전까지는 sts3이랑 비슷했음
+	- Spring Boot 2의 마지막 버전
+
+3.0.x 부터는 대규모 변경 다른 부분이 많음 
+	- Spring Framework 6 기반
+	- Jakarta EE 9 사용 (javax → jakarta)
+	- Java 17 이상 필요
+
+참고
+ Spring Boot 3.x 이상은 Jakarta EE 9 이상 기반입니다. (javax 패키지 → jakarta 패키지로 변경됨)
+ Java 버전도 중요:
+ Spring Boot 2.x → Java 8~11
+ Spring Boot 3.x → Java 17 이상 필수, 일부 기능은 Java 21 권장
+
+
+javax vs jakarta 차이
+ Java 웹 애플리케이션 개발에서 사용하는 표준 API의 네임스페이스(Namespace)가
+ Java EE → Jakarta EE로 이관되면서,
+ javax.* → jakarta.*로 전환되었음.
+
+왜 변경되었는가?
+ Java EE는 원래 Oracle이 소유한 기업용 자바 기술 스택
+ 2017년 이후 Oracle이 Java EE를 Eclipse Foundation에 기부
+ 하지만 Oracle은 javax 네임스페이스는 계속 본인 소유로 유지하고자 함
+ 따라서 새로운 오픈 표준인 Jakarta EE에서는 네임스페이스를 jakarta.*로 변경
+
+
+Spring Boot vs STS3 vs STS4 비교
+gpt야 부탁해 이부분 정리해줘
+
+
+------------------------------
+세팅
+------------------------------
+
+-----
+jdk 버전 설치
+-----
+jdk 버전별 다운로드 방법
+ 구글에 
+ open jdk ga 검색 
+21.0.2버전 설치
+C: 경로에 설치
+bin 경로 스스템 속성 환경변수 path에 등록 맨 위로올리기
+
+
+
+-----
+인텔리제이 설치
+-----
+구글에 검색
+인텔리제이 다운로드 
+
+무료버전 os에 맞게 다운로드
+
+체크사항 안건드려도 됨 설치.
+
+파일 > 세팅
+gradle 
+
+project
+01_INIT [demo] 우클릭 project , sdks
+
+setting  에서 plugins 검색  Lombok  Install 
+
+sts 실행 워크스페이스 경로 복사
+
+
+C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.1\bin
+경로 시스템 속성 환경변수 path에 등록
+
+테스트
+ cmd 에서 
+
+idea 입력 enter 하면 실행됨.
+
+-
+설정
+-
+https://start.spring.io/ 접속
+
+project - Gradle - Groovy
+
+Language - Java
+
+Spring Boot - 3.4.5
+
+Packaging - War
+
+Java - 21
+
+
+
+Dependencies
+Add dependencies...Ctrl + b
+Lombok
+Spring Web
+
+ExploreCtrl + Space 에서 
+dependencies 확인
+
+
+GenerateCtrl + ⏎
+
+(참고 이미지) 
+
+demo폴더 다운됨.
+
+git repository 새로 만들기 SPRINGBOOT_LOG
+demo폴더 넣기 - 01_INIT으로 네임변경했음.
+
+(참고 이미지)
+
+01_INIT폴더 내에서 cmd 창 열어서 idea .  실행 or 경로 에서 idea . 엔터 해도 실행됨.
+
+(참고 이미지)
+
+---------------------
+01_INIT
+---------------------
+Keymap 설정하는 창 (선택 안하고 건너뛰기하면 됨.)
+
+
+파일 setting 에서 
+gradle 검색 
+
+Build and run using : intelliJ IDEA 
+Run tests usin : intelliJ IDEA
+
+Gradle JMV :  21.0.2 선택  
+
+ok
+
+(참고이미지)
+
+Project 생성됨. Project 안보이면 Gradle 새로고침 누르면됨.
+
+(참고이미지)
+
+Project
+우클릭 -> Open Module Settings 클릭
+Project -> SDK 선택
+
+Platform Settings / SDKs 탭 에서 잘 설정 됐는지 확인 OK
+
+(참고이미지)
+
+DemoApplication 잘 있는지 확인
+
+(참고이미지)
+
+
+setting - plugin 검색  plugin 탭에서 lombok 인스톨
+
+
+임포트 자동으로 설정
+
+세팅에서 import 검색 -> Aouto Import 클릭
+Add unambiguous imports on the fly 체크
+Optimize imports... 체크
+(참고이미지)
+
+
+휠 폰트 조절
+세팅에서 wheel 검색 
+Mouse Control
+Change font size with Ctr+Mouse Wheel in 체크
+(참고이미지)
+
+
+
+
+
+
+build.gradle 코드 추가
+
+
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	//providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//JSP
+	implementation 'org.apache.tomcat.embed:tomcat-embed-jasper' // 추가
+
+	//JSTL
+	implementation 'jakarta.servlet:jakarta.servlet-api' //스프링부트 3.0 이상
+	implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api' //스프링부트 3.0 이상
+	implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl' //스프링부트 3.0 이상
+}
+
+(참고이미지)
+
+
+
+
+01_INIT\src\main\resources\application.properties
+코드 추가
+
+
+
+spring.application.name=demo
+
+#Tomcat Server Port Setting
+server.port=8090
+
+#UTF-8 Setting
+spring.servlet.filter.encoding.filter-name=encodingFilter
+spring.servlet.filter.encoding.filter-class=org.springframework.web.filter.CharacterEncodingFilter
+spring.servlet.filter.encoding.init-param.encoding=UTF-8
+spring.servlet.filter.encoding.init-param.forceEncoding=true
+spring.servlet.filter.encoding.url-pattern=/*
+
+# JSP Setting
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+# JSP Auto-Configuration
+server.servlet.jsp.init-parameters.development=true
+
+
+Gradle 코끼리모양  오른쪽에있음
+에서 새로고침 하면 설치됨
+
+demo 에 controller패키지 생성
+controller에 HomeController.java 생성
+
+(참고이미지)
+
+
+sts에 만들어놓은 00_init 프로젝트에서 
+
+HomeController.java 붙여넣기 
+
+임포트 자동 설정 해놔서 임포트 자동으로됨
+
+@Controller
+@Slf4j
+public class HomeController {
+
+    @GetMapping(value = "/")
+    public String home(){
+
+        log.info("GET /");
+        return "index";
+    }
+}
+
+(참고이미지)
+
+
+
+sts에서 00_init 프로젝트에
+webapp폴더 복사 demo 폴더에 붙여넣기
+web.xml 필요없으니까 삭제
+spring 필요없으니까 삭제
+home.jsp 이름 index로 바꾸기
+
+실행 잘 되는지 확인
+
+인터넷에 http://localhost:8090/ 접속 되는지 확인
+
+(참고이미지)
+
+종료.
+--------------------------
+02_PARAM  - 
+--------------------------
+01_INIT 복붙해서 만들기 폴더명만 02_PARAM
+
+sts에 만들어놓은 02_parameter 프로젝트에서 
+ParameterTestcontroller.java 복 붙
+
+PersonDto.java 복 붙
+
+views/param 복붙
+
+(참고이미지)
+
+
+
+--------------------------
+03_VALIDATION
+--------------------------
+ 02_PARAM 복붙해서 만들기 폴더명만 03_VALIDATION
+
+validation 추가 
+방법 1
+https://start.spring.io/ 에서 add edpendencies에서 validation 검색 추가.
+
+
+방법 2 
+매이븐 레포지토리에서 찾아서 build.gradle에 붙여넣기
+
+maven repository
+hibernate-validator 검색
+Hibernate Validator Engine » 8.0.2.Final
+gradle탭 format : groovy short
+// https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator
+implementation 'org.hibernate.validator:hibernate-validator:8.0.2.Final'
+
+maven repository
+validation 검색
+Jakarta Validation API » 3.1.1
+gradle탭 format : groovy short
+// https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
+implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
+
+(참고이미지)
+
+
+
+
+sts에 만들어놓은 ex03_dataValidation_my 프로젝트에서 
+
+MemoController.java 복 붙
+
+MemoDto.java 복 붙
+
+views/memo 복붙
+memo/add.jsp에서
+
+	<form action="${pageContext.request.contextPath}/memo/add" method="post">
+
+${pageContext.request.contextPath}부분 지워주기
+
+<form action="/memo/add" method="post"> 이렇게 해주기
+
+(참고이미지)
+
+
+
+
+--------------------------
+04_EXCEPTION
+--------------------------
+03_VALIDATION 복붙해서 만들기 폴더명만 04_EXCEPTION
+
+sts에 만들어놓은 ex04_exception 프로젝트에서 
+
+/ex04_exception/src/main/java/com/example/app/controller/ExceptionTestController.java 복붙
+
+/ex04_exception/src/main/webapp/WEB-INF/views/except 복 붙
+
+(참고 이미지)
+
+
+com.example.app.controller.excption 복 붙
+
+/ex04_exception/src/main/webapp/WEB-INF/views/global_error.jsp 복 붙
+(참고 이미지)
+
+
+--------------------------
+05_DATABASE
+--------------------------
+
+
+04_EXCEPTION 복붙해서 만들기 폴더명만 05_DATABASE
+
+
+방법 1
+https://start.spring.io/ 
+ADD DEPENDENCIES.. 에서 mysql driver 추가
+expore 클릭
+runtimeOnly 'com.mysql:mysql-connector-j' 복사 -> build.gradle에 붙여넣기
+
+ADD DEPENDENCIES.. 에서 JDBC API 추가
+expore 클릭
+implementation 'org.springframework.boot:spring-boot-starter-jdbc' 복사 -> build.gradle에 붙여넣기
+(참고이미지)
+
+매이븐 레포지토리 에서 
+connections-dbcp2 검색
+Apache Commons DBCP » 2.13.0
+
+Gradle탭에서  Format : Groovy Short 
+// https://mvnrepository.com/artifact/org.apache.commons/commons-dbcp2
+implementation 'org.apache.commons:commons-dbcp2:2.13.0'
+복사 -> build.gradle에 붙여넣기
+
+(참고이미지)
+
+
+application.properties 에 코드추가
+
+## DATASOURCE
+spring.datasource.url=jdbc:mysql://localhost:3306/testdb
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=root
+spring.datasource.password=1234
+
+(참고이미지)
+
+
+DataSourceTests 테스트하기
+test...config.DataSourceTests만들기
+
+package com.example.demo.config;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
+@SpringBootTest
+public class DataSourceTests {
+
+    @Autowired
+    private DataSource dataSource;
+
+    @Test
+    public void t1() throws Exception {
+        System.out.println(dataSource);
+        Connection conn = dataSource.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement("insert into tbl_memo values(?,?,?,now())");
+        pstmt.setInt(1,111);
+        pstmt.setString(2,"ababaabab");
+        pstmt.setString(3,"springboot@test.com");
+        pstmt.executeUpdate();
+    }
+}
+
+test 잘 되는지 실행해보기
+
+
+
+sts에서 만들어놓은
+ex05_dataSource 프로젝트 에서
+/ex05_dataSource/src/main/java/com/example/app/config/DataSourceConfig.java 복 붙
+(참고이미지)
+
+DataSourceConfig.java에서 
+Ctrl + Shift + t
+하면 Test만들어짐
+
+DataSourceConfigTest 만들어짐
+코드추가
+Test import :
+import org.junit.jupiter.api.Test; 이걸로하기
+
+
+@SpringBootTest
+class DataSourceConfigTest {
+
+    @Autowired
+    private DataSource dataSource2;
+
+    @Autowired
+    private DataSource dataSource3;
+
+    @Test
+    public void t1() throws Exception {
+        Connection conn = dataSource2.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement("insert into tbl_memo values(?,?,?,now())");
+        pstmt.setInt(1,222);
+        pstmt.setString(2,"ababaabab");
+        pstmt.setString(3,"springboot@test.com");
+        pstmt.executeUpdate();
+    }
+
+    @Test
+    public void t2() throws Exception {
+        Connection conn = dataSource3.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement("insert into tbl_memo values(?,?,?,now())");
+        pstmt.setInt(1,333);
+        pstmt.setString(2,"ababaabab");
+        pstmt.setString(3,"springboot@test.com");
+        pstmt.executeUpdate();
+    }
+
+}
+
+test 잘 되는지 실행해보기
+
+
+--------------------------
+06_MYBATIS
+--------------------------
+
+05_DATABASE 복붙해서 만들기 폴더명만 06_MYBATIS로 변경
+
+https://start.spring.io/ 
+ADD DEPENDENCIES.. 에서 MyBatis Framework 추가
+expore 클릭
+implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+ 복사 -> build.gradle에 붙여넣기
+(참고이미지)
+
+
+sts에서 만들어놓은
+ex06_mybatis 프로젝트 에서
+/ex06_mybatis/src/main/java/com/example/app/config/MybatisConfig.java 복 붙
+(참고이미지)
+
+
+
+MybatisConfig.java에서 Ctrl + shift + t 눌러서 test 만들기
+
+<<코드>>
+@SpringBootTest
+class MybatisConfigTest {
+
+    @Autowired
+    private SqlSessionFactory sqlSessionFactory;
+
+    @Test
+    public void t1() throws Exception {
+        assertNotNull(sqlSessionFactory);
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+        assertNotNull(sqlSession);
+    }
+
+
+}
+
+
+실행 확인.
+
+
+
+
+com.example.app.domain.mapper   복 붙 
+안에 MemoMapper.java 있음
+/ex06_mybatis/src/main/resources/mapper  복 붙
+안에 MemoMapper.xml 있음  
+(참고이미지)
+
+MemoMapper.xml 에서 경로 다 변경하기
+com.example.app.domain.mapper.MemoMapper
+-> com.example.demo.domain.mapper.MemoMapper
+
+
+
+
+MemoMapper.java 에서  Ctrl + shift + t 눌러서 test 만들기
+
+<<코드>>
+
+@SpringBootTest
+@MapperScan
+class MemoMapperTest {
+
+    @Autowired
+    private MemoMapper memoMapper;
+
+    @Test
+    public void t1() throws Exception{
+        MemoDto memoDto = new MemoDto(444, "a", "a", LocalDateTime.now(), null);
+        memoMapper.insert(memoDto);
+        System.out.println(memoDto);
+    }
+
+    @Test
+    public void t2() throws Exception{
+        MemoDto memoDto = new MemoDto(555, "a", "a", LocalDateTime.now(), null);
+        memoMapper.insertXml(memoDto);
+        System.out.println(memoDto);
+    }
+
+}
+
+
+실행 잘돼는지 테스트 해보기
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
