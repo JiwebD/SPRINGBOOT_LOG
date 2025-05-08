@@ -6,6 +6,16 @@
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
+<style>
+.content{
+margin : 140px auto;
+padding : 100px;
+
+
+}
+
+</style>
+
 </head>
 <body>
 
@@ -23,6 +33,9 @@
 
       <button type="submit">업로드</button>
   </form>
+  <c:if test="${not empty error}">
+      <div style="color:red;">${error}</div>
+  </c:if>
 </div>
 
 </body>

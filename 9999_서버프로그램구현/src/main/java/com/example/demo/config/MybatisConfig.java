@@ -15,12 +15,12 @@ import javax.sql.DataSource;
 public class MybatisConfig {
 
 	@Autowired
-	private DataSource dataSource3;
+	private DataSource dataSource;
 
 	@Bean 
 	public SqlSessionFactory sqlSessionFactory() throws Exception {
 		SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean(); //저장할 bean
-		sessionFactory.setDataSource(dataSource3); //어떤데이터소스를쓸지
+		sessionFactory.setDataSource(dataSource);
 		
 	    // Mapper XML 파일의 위치 설정
 	    PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();

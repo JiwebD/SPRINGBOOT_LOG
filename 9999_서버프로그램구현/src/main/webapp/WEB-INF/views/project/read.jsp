@@ -139,12 +139,29 @@
   background-color: #f3f3f3;
 }
 
+.btn{
+ display : flex;
+ justify-content : center;
+ item-align : center;
+ width : 300px;
+ gap : 20px;
+}
+
+.btn a{
+ width : 120px;
+ height : 50px;
+ background-color : #dddddd;
+ text-align : center;
+ line-height : 50px;
+ cursor : pointer;
+
+}
 
 
     </style>
 </head>
 <body>
-
+    <h1>프로젝트 리스트</h1>
     <div class="content">
     <c:forEach var="dto" items="${list}">
       <div class="funding-item">
@@ -156,6 +173,11 @@
             <p class="funding-id">#${dto.formattedId}</p>
             <p class="funding-title">${dto.projectTitle}</p>
             <p class="funding-title">${dto.shortInfo}</p>
+          </div>
+
+          <div class="btn">
+          <a href="/project/update?projectId=${dto.projectId}">수정</a>
+          <a href="/project/delete?projectId=${dto.projectId}">삭제</a>
           </div>
 
         </div>
