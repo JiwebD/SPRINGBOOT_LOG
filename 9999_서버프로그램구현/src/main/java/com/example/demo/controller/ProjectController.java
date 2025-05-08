@@ -37,39 +37,49 @@ public class ProjectController {
     @PostMapping("/upload")
     public String upload(@RequestParam("thumbnail") MultipartFile file,
                          @RequestParam("projectTitle") String title,
-                         @RequestParam("projectInfo") String info) throws Exception {
+                         @RequestParam("projectInfo") String info,
+                         Model model) {
 
-        LocalDateTime now = LocalDateTime.now();
-        // yyyyMMdd_HHmmss 폴더명
-        String folderName = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
 
-        String UploadPath = ROOT_PATH
-                + File.separator // \\구분자
-                + UPLOAD_PATH
-                + File.separator
-                + folderName
-                + File.separator;
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            // yyyyMMdd_HHmmss 폴더명
+            String folderName = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
 
-        File dir = new File(UploadPath);
-        if (!dir.exists()) dir.mkdirs();
+            String UploadPath = ROOT_PATH
+                    + File.separator // \\구분자
+                    + UPLOAD_PATH
+                    + File.separator
+                    + folderName
+                    + File.separator;
 
-        String saveName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        File saveFile = new File(UploadPath, saveName);
-        file.transferTo(saveFile);
+            File dir = new File(UploadPath);
+            if (!dir.exists()) dir.mkdirs();
 
-        // DB에 저장할 상대 경로
-        String dbPath = UPLOAD_PATH + "/" + folderName + "/" + saveName;
+            String saveName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            File saveFile = new File(UploadPath, saveName);
+            file.transferTo(saveFile);
 
-        ProjectDto dto = new ProjectDto();
-        dto.setProjectTitle(title);
-        dto.setProjectInfo(info);
-        dto.setImagePath(dbPath);
+            // DB에 저장할 상대 경로
+            String dbPath = UPLOAD_PATH + "/" + folderName + "/" + saveName;
 
-        projectService.saveProject(dto);
-        // 로그로 id 확인
-        System.out.println("📌 생성된 projectId = " + dto.getProjectId());
+            ProjectDto dto = new ProjectDto();
+            dto.setProjectTitle(title);
+            dto.setProjectInfo(info);
+            dto.setImagePath(dbPath);
 
-        return "redirect:/project/read";
+            projectService.saveProject(dto);
+            // 로그로 id 확인
+            System.out.println("📌 생성된 projectId = " + dto.getProjectId());
+
+            return "redirect:/project/read";
+
+        }catch (Exception e) {
+            // 실패 시 업로드 폼으로 다시 이동
+            log.error("업로드 중 오류 발생", e);
+            model.addAttribute("error", "동일한 제목의 프로젝트가 존재합니다. 다시 시도해주세요.");
+            return "project/upload";
+        }
     }
 
     @GetMapping("/read")
@@ -78,4 +88,63 @@ public class ProjectController {
         model.addAttribute("list", list);
         return "project/read"; // → /WEB-INF/views/project/read.jsp
     }
+
+    @GetMapping("/delete")
+    public String delete(@RequestParam("projectId") Integer projectId) {
+        projectService.delete(projectId);
+
+        return "redirect:/project/read";
+
+
+    }
+
+    @GetMapping("/update")
+    public String updateForm(@RequestParam("projectId") int projectId, Model model) {
+        ProjectDto dto = projectService.findOne(projectId);
+        model.addAttribute("dto", dto);
+        return "project/update";  // 수정용 JSP
+    }
+
+    @PostMapping("/update")
+    public String update(@RequestParam("thumbnail") MultipartFile file,
+                         @RequestParam("projectId") int projectId,
+                         @RequestParam("projectTitle") String title,
+                         @RequestParam("projectInfo") String info,
+                         @RequestParam("existingImagePath") String existingImagePath) throws Exception {
+
+        String dbPath;
+
+        if (file != null && !file.isEmpty()) {
+            // 새 파일 업로드
+            LocalDateTime now = LocalDateTime.now();
+            String folderName = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
+            String UploadPath = ROOT_PATH + File.separator + UPLOAD_PATH + File.separator + folderName + File.separator;
+            File dir = new File(UploadPath);
+            if (!dir.exists()) dir.mkdirs();
+
+            String saveName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            File saveFile = new File(UploadPath, saveName);
+            file.transferTo(saveFile);
+
+            dbPath = UPLOAD_PATH + "/" + folderName + "/" + saveName;
+
+        } else {
+            // 새 파일 없으면 기존 경로 유지
+            dbPath = existingImagePath;
+        }
+
+        ProjectDto dto = new ProjectDto();
+        dto.setProjectId(projectId);
+        dto.setProjectTitle(title);
+        dto.setProjectInfo(info);
+        dto.setImagePath(dbPath);
+
+        projectService.update(dto);
+
+        return "redirect:/project/read";
+
+    }
+
+
 }
