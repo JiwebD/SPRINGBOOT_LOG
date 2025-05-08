@@ -70,7 +70,7 @@ public class ProjectController {
 
             projectService.saveProject(dto);
             // 로그로 id 확인
-            System.out.println("📌 생성된 projectId = " + dto.getProjectId());
+            System.out.println(" 생성된 projectId = " + dto.getProjectId());
 
             return "redirect:/project/read";
 
@@ -115,6 +115,20 @@ public class ProjectController {
         String dbPath;
 
         if (file != null && !file.isEmpty()) {
+
+            // 기존 썸네일 삭제
+            if (existingImagePath != null && !existingImagePath.isEmpty()) {
+                File oldFile = new File(ROOT_PATH + File.separator + existingImagePath.replace("/", File.separator));
+                System.out.println("기존 썸네일 경로: " + oldFile.getAbsolutePath());
+
+                if (oldFile.exists()) {
+                    boolean deleted = oldFile.delete();
+                    System.out.println("삭제 성공 여부: " + deleted);
+                } else {
+                    System.out.println("파일이 존재하지 않음");
+                }
+            }
+
             // 새 파일 업로드
             LocalDateTime now = LocalDateTime.now();
             String folderName = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
