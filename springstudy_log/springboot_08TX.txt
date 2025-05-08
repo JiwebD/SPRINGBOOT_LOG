@@ -1,0 +1,352 @@
+스프링부트
+트랜젝션 공부 
+
+
+---------------------
+TxConfig
+
+08_TX/src/main/java/com/example/demo/config/TxConfig.java
+
+package com.example.demo.config;
+
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+
+@Configuration
+@EnableTransactionManagement
+public class TxConfig {
+
+
+    @Autowired
+    private DataSource dataSource;
+
+    // 기본 TransactionManager
+    @Bean(name = "dataSourceTransactionManager")
+    public DataSourceTransactionManager transactionManager2() {
+        //System.out.println("TX dataSrouce : " + dataSource.toString());
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+
+    //    JPA TransactionManager Settings
+    @Bean(name="jpaTransactionManager")
+    public JpaTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory);
+        transactionManager.setDataSource(dataSource);
+
+        return transactionManager;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+-----------------------------
+JpaConfig.java
+
+08_TX/src/main/java/com/example/demo/config/JpaConfig.java
+
+
+package com.example.demo.config;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.init.DataSourceInitializer;
+import org.springframework.jdbc.datasource.init.DatabasePopulator;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+@Configuration
+@EntityScan(basePackages = {"com.example.demo.domain.entity"})
+@EnableJpaRepositories
+(
+        basePackages ="com.example.demo.domain.repository",
+        transactionManagerRef = "jpaTransactionManager"
+)
+public class JpaConfig {
+    @Autowired
+    private DataSource dataSource;
+
+    @Bean
+    LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
+        entityManagerFactoryBean.setDataSource(dataSource);
+        entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        entityManagerFactoryBean.setPackagesToScan("com.example.demo.domain.entity");
+
+        Properties jpaProperties = new Properties();
+
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.hbm2ddl.auto", "update");                         // 필요에 따라 'create', 'validate' 등으로 변경
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect"); // 사용 중인 DB에 맞게 변경
+        properties.put("hibernate.show_sql", true);
+        properties.put("hibernate.format_sql", true);
+
+        properties.put("hibernate.hibernate.jdbc.batch_size", 1000);
+        properties.put("hibernate.hibernate.order_inserts", true);
+        properties.put("hibernate.order_updates", true);
+        properties.put("hibernate.jdbc.batch_versioned_data", true);
+        entityManagerFactoryBean.setJpaPropertyMap(properties);
+
+        return entityManagerFactoryBean;
+    }
+
+
+    //애플리케이션 시작 시 데이터베이스 초기화
+    @Bean
+    public DataSourceInitializer dataSourceInitializer() {
+        DataSourceInitializer initializer = new DataSourceInitializer();
+        initializer.setDataSource(dataSource);
+        initializer.setDatabasePopulator(databasePopulator());
+        return initializer;
+    }
+
+    //schema.sql과 data.sql 스크립트를 실행
+    private DatabasePopulator databasePopulator() {
+        //Spring Framework에서 제공하는 클래스로, 외부 리소스에 정의된 SQL 스크립트를 사용하여 데이터베이스를 초기화하거나 정리하는 데 사용
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+        //src/main/resources 디렉토리에 위치한 SQL 스크립트를 로드
+        Resource schemaScript = new ClassPathResource("schema.sql");
+        Resource dataScript = new ClassPathResource("data.sql");
+        populator.addScript(schemaScript);
+        populator.addScript(dataScript);
+        return populator;
+    }
+
+}
+
+
+
+
+
+
+---------------------
+Memo.java
+
+08_TX/src/main/java/com/example/demo/domain/entity/Memo.java
+
+package com.example.demo.domain.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name="memo")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Memo {
+
+    @Id
+    private int id;
+    private String text;
+
+}
+
+
+
+
+
+---------------------
+MemoRepository.java
+
+08_TX/src/main/java/com/example/demo/domain/repository/MemoRepository.java
+
+package com.example.demo.domain.repository;
+
+import com.example.demo.domain.entity.Memo;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface MemoRepository extends JpaRepository<Memo, Integer> {
+
+
+}
+
+
+
+
+-------------------
+MemoDto.java
+
+08_TX/src/main/java/com/example/demo/domain/dto/MemoDto.java
+
+package com.example.demo.domain.dto;
+
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MemoDto {
+
+	public MemoDto(int id, String text) {
+		this.id = id;
+		this.text = text;
+	}
+	
+	//@Min(value, message): 숫자가 주어진 최솟값 이상인지 검증.
+	@Min(value = 10,message = "ID는 10이상이 어야 합니다.")
+	@Max(value = 65535,message = "ID의 최대 숫자는 65535이하 이어야 합니다.")
+	 @NotNull(message="ID는 필수항목입니다")
+	private Integer id;
+	
+	//@NotBlank(message): 문자열이 비어 있지 않은지 확인합니다.
+	@NotBlank(message="메모를 입력하세요")
+	private String text;
+	@NotBlank(message="메모를 입력하세요")
+	@Email(message="example@example.com에 맞게 입력해주세요")
+	private String writer;
+	
+ 
+	
+	// @DateTimeFormat: 문자열을 LocalDateTime으로 변환할 때 사용할 포맷 지정
+	// 스프링은 @RequestParam, @ModelAttribute 등을 통해 문자열을 자바 객체로 바인딩할 때
+	// LocalDateTime처럼 형식이 필요한 필드는 명확한 포맷이 없으면 400 오류 발생 가능
+	@DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm")	// 폼에서 넘어오는 날짜 문자열 포맷 지정
+	@NotNull(message="날짜정보를 선택해주세요")
+	private LocalDateTime createAt;
+	
+	//
+	private LocalDate dateTest;
+
+
+}
+
+
+
+---------------------
+TxTestService.java
+08_TX/src/main/java/com/example/demo/domain/service/TxTestService.java
+
+package com.example.demo.domain.service;
+
+import com.example.demo.domain.dto.MemoDto;
+import com.example.demo.domain.entity.Memo;
+import com.example.demo.domain.mapper.MemoMapper;
+import com.example.demo.domain.repository.MemoRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.sql.SQLException;
+
+@Service
+@Slf4j
+public class TxTestService {
+
+    @Autowired
+    private MemoMapper memoMapper;
+
+    //@Transactional(rollbackFor = SQLException.class,transactionManager = "dataSourceTransactionManager")
+    public void addMemoTx(MemoDto dto) throws Exception	 {
+        log.info("MemoService's addMemoTx Call! ");
+        memoMapper.insert(dto);//01 정상INSERT
+        throw new SQLException();
+    }
+
+    //JPA REPOSITORY
+    @Autowired
+    private MemoRepository memoRepository;
+
+//    @Transactional(rollbackFor = SQLException.class,transactionManager = "jpaTransactionManager")
+    public void addMemoTx2(MemoDto dto) throws Exception{
+        log.info("MemoService's addMemoTx2 Call!");
+        Memo memo = new Memo();
+        memo.setId(dto.getId());
+        memo.setText(dto.getText());
+        memoRepository.save(memo);
+        throw new SQLException();
+    }
+}
+
+
+
+
+
+
+
+
+---------------------
+TxTestServiceTest.java
+
+08_TX/src/test/java/com/example/demo/domain/service/TxTestServiceTest.java
+
+
+package com.example.demo.domain.service;
+
+import com.example.demo.domain.dto.MemoDto;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class TxTestServiceTest {
+
+    @Autowired
+    private TxTestService txTestService;
+    @Test
+    void t2() throws Exception {
+        txTestService.addMemoTx(new MemoDto(1,"TEST1"));
+    }
+
+    //JPA TX
+    @Test
+    void t3() throws Exception {
+        txTestService.addMemoTx2(new MemoDto(1,"TEST1"));
+    }
+}
+
+
+
+
+
+TxTestService에서
+
+@Transactional(rollbackFor = SQLException.class,transactionManager = "dataSourceTransactionManager")
+
+@Transactional(rollbackFor = SQLException.class,transactionManager = "jpaTransactionManager")
+
+주석 하고 안하고 트랜잭션 롤백 적용 여부 실습해보기.

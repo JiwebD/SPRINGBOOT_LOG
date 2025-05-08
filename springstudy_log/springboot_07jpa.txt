@@ -785,8 +785,9 @@ class UserRepositoryTest {
 -----------------
 Lend.java
 
-src\main\java\com\example\demo\domain\entity\Lend.java
+package com.example.demo.domain.entity;
 
+import jakarta.persistence.*;
 package com.example.demo.domain.entity;
 
 import jakarta.persistence.*;
@@ -806,16 +807,403 @@ public class Lend {
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER) //기본값
+//    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bookcode", foreignKey = @ForeignKey(name="FK_LEND_BOOK",
             foreignKeyDefinition = "FOREIGN KEY(bookcode) REFERENCES book(bookcode) ON DELETE CASCADE ON UPDATE CASCADE"))
     private Book book;
 
-    @ManyToOne
+//    @ManyToOne(fetch = FetchType.EAGER) //기본값
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username", foreignKey = @ForeignKey(name="FK_LEND_USER",
             foreignKeyDefinition = "FOREIGN KEY(username) REFERENCES user(username) ON DELETE CASCADE ON UPDATE CASCADE"))
     private User user;
 }
+
+
+-----------------
+LendRepository.java
+
+package com.example.demo.domain.repository;
+
+import com.example.demo.domain.entity.Lend;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface LendRepository extends JpaRepository<Lend,Long> {
+
+    @Query("SELECT l FROM Lend AS l JOIN FETCH l.user where l.user.username = :username") //:username = 외부에서 받아온 username
+    List<Lend> findLendsByUser(@Param("username") String username);
+
+    @Query("SELECT l FROM Lend AS l JOIN FETCH l.user JOIN FETCH l.book")
+    List<Lend> findLendsByUserAndBook();
+}
+
+
+
+
+---------------------------
+application.properties
+추가
+#
+spring.jpa.show-sql=true  
+
+
+
+
+-----------------
+LendRepositoryTest.java
+
+
+package com.example.demo.domain.repository;
+
+import com.example.demo.domain.entity.Book;
+import com.example.demo.domain.entity.Lend;
+import com.example.demo.domain.entity.User;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@SpringBootTest
+class LendRepositoryTest {
+
+    @Autowired
+    private LendRepository lendRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Test
+    public void t1() throws Exception {
+
+        //저장되어있는 도서코드를 가지는 Book
+        Book book = bookRepository.findById(333l).get();
+        //저장되어있는 유저정보를 가지는 User
+        User user = userRepository.findById("user1").get();
+
+        Lend lend = new Lend();
+        lend.setBook(book);
+        lend.setUser(user);
+        lendRepository.save(lend);
+
+
+    }
+
+    @Test
+    public void t2() throws Exception {
+        Lend lend = lendRepository.findById(1L).get();
+        Book book = bookRepository.findById(444L).get();
+        lend.setBook(book);
+        lendRepository.save(lend);
+    }
+
+    @Test
+    public void t3() throws Exception {
+        lendRepository.deleteById(1L);
+    }
+
+    @Test
+    public void t4() throws Exception {
+//        List<Lend> list = lendRepository.findLendsByUser("user1");
+//        list.stream().forEach(System.out::println);
+
+        List<Lend> list = lendRepository.findLendsByUserAndBook();
+        list.stream().forEach(System.out::println);
+    }
+
+    @Test
+    @Transactional(rollbackFor = Exception.class) //LAZY Option 사용시 Transactional사용해야함.
+    public void t5() throws Exception {
+        System.out.println("------------------ FETCH 방식 테스트 시작 ------------------");
+        Optional<Lend> lendOptional = lendRepository.findById(2L);
+        System.out.println("------------------ findById(2L) ------------------");
+        Lend lend = lendOptional.get();
+        System.out.println("------------------ getUser() ------------------");
+        User user = lend.getUser(); // LAZY Option 사용시 해당 시점에서 쿼리 실행
+        System.out.println(user);
+        System.out.println("------------------ FETCH 방식 테스트 종료 ------------------");
+
+
+    }
+
+
+}
+
+
+
+
+-------------------------
+application.properties
+
+spring.application.name=demo
+
+#Tomcat Server Port Setting
+server.port=8090
+
+#UTF-8 Setting
+spring.servlet.filter.encoding.filter-name=encodingFilter
+spring.servlet.filter.encoding.filter-class=org.springframework.web.filter.CharacterEncodingFilter
+spring.servlet.filter.encoding.init-param.encoding=UTF-8
+spring.servlet.filter.encoding.init-param.forceEncoding=true
+spring.servlet.filter.encoding.url-pattern=/*
+
+# JSP Setting
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+# JSP Auto-Configuration
+server.servlet.jsp.init-parameters.development=true
+
+
+## DATASOURCE
+spring.datasource.url=jdbc:mysql://localhost:3306/testdb
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=root
+spring.datasource.password=1234
+
+# ----------------------------
+# JPA ??
+# ----------------------------
+# Hibernate? DDL ?? ??/?? ?? ??
+# create: ?? ??? ?? ??
+# create-drop: ?? ? ??? ??
+# update: ?? ??? ??
+# validate: ?? ??? ??
+# none: ?? ??? ?? ??
+
+# SQL ??? ?? ?? ?? (???, ???? ??)
+spring.jpa.properties.hibernate.format_sql=true
+
+# JDBC ?? ?? ?? (? ?? ??? INSERT/UPDATE ?)
+spring.jpa.properties.hibernate.jdbc.batch_size=1000
+
+# INSERT ?? ? ?? ??? ?? ?? ?? (?? ??)
+spring.jpa.properties.hibernate.order_inserts=true
+
+# UPDATE ?? ? ?? ??? ?? ?? ?? (?? ??)
+spring.jpa.properties.hibernate.order_updates=true
+
+# ??? ?(?? ??)? ??? ???? ?? ?? ????? ??
+spring.jpa.properties.hibernate.jdbc.batch_versioned_data=true
+
+
+# console sql show -
+spring.jpa.show-sql=true
+
+# -------------------------
+# JPA *.SQL SETUP
+# -------------------------
+# ????? DDL? ??? ???? embedded DB(H2, HSQL, Derby)??? ?? ???
+spring.datasource.initialization-mode=always
+
+# Hibernate? DDL ?? ?? ?? (NONE, CREATE, CREATE_DROP, UPDATE, VALIDATE ?)
+spring.jpa.hibernate.ddl-auto=none
+
+# data.sql, schema.sql ?? ?? ??
+spring.sql.init.mode=always
+spring.sql.init.schema-locations=classpath:schema.sql
+spring.sql.init.data-locations=classpath:data.sql
+
+
+
+
+
+-------------------------
+resources/data.sql
+
+INSERT IGNORE INTO tbl_a values(1,111);
+INSERT IGNORE INTO tbl_a values(2,222);
+INSERT IGNORE INTO tbl_a values(3,333);
+
+-------------------------
+resources/schema.sql
+
+CREATE TABLE IF NOT EXISTS tbl_a(id int primary key, pw int not null);
+
+
+
+
+DemoApplication실행
+
+workbench에 테이블 생성확인
+
+
+
+
+
+
+
+---------------------
+application.properties에  JPA 부분 Config로 관리?
+
+JPA부분 주석
+
+
+spring.application.name=demo
+
+#Tomcat Server Port Setting
+server.port=8090
+
+#UTF-8 Setting
+spring.servlet.filter.encoding.filter-name=encodingFilter
+spring.servlet.filter.encoding.filter-class=org.springframework.web.filter.CharacterEncodingFilter
+spring.servlet.filter.encoding.init-param.encoding=UTF-8
+spring.servlet.filter.encoding.init-param.forceEncoding=true
+spring.servlet.filter.encoding.url-pattern=/*
+
+# JSP Setting
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+# JSP Auto-Configuration
+server.servlet.jsp.init-parameters.development=true
+
+
+## DATASOURCE
+spring.datasource.url=jdbc:mysql://localhost:3306/testdb
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=root
+spring.datasource.password=1234
+
+## ----------------------------
+## JPA ??
+## ----------------------------
+## Hibernate? DDL ?? ??/?? ?? ??
+## create: ?? ??? ?? ??
+## create-drop: ?? ? ??? ??
+## update: ?? ??? ??
+## validate: ?? ??? ??
+## none: ?? ??? ?? ??
+#
+## SQL ??? ?? ?? ?? (???, ???? ??)
+#spring.jpa.properties.hibernate.format_sql=true
+#
+## JDBC ?? ?? ?? (? ?? ??? INSERT/UPDATE ?)
+#spring.jpa.properties.hibernate.jdbc.batch_size=1000
+#
+## INSERT ?? ? ?? ??? ?? ?? ?? (?? ??)
+#spring.jpa.properties.hibernate.order_inserts=true
+#
+## UPDATE ?? ? ?? ??? ?? ?? ?? (?? ??)
+#spring.jpa.properties.hibernate.order_updates=true
+#
+## ??? ?(?? ??)? ??? ???? ?? ?? ????? ??
+#spring.jpa.properties.hibernate.jdbc.batch_versioned_data=true
+#
+#
+## console sql show -
+#spring.jpa.show-sql=true
+#
+## -------------------------
+## JPA *.SQL SETUP
+## -------------------------
+## ????? DDL? ??? ???? embedded DB(H2, HSQL, Derby)??? ?? ???
+#spring.datasource.initialization-mode=always
+#
+## Hibernate? DDL ?? ?? ?? (NONE, CREATE, CREATE_DROP, UPDATE, VALIDATE ?)
+#spring.jpa.hibernate.ddl-auto=none
+#
+## data.sql, schema.sql ?? ?? ??
+#spring.sql.init.mode=always
+#spring.sql.init.schema-locations=classpath:schema.sql
+#spring.sql.init.data-locations=classpath:data.sql
+
+
+
+
+
+---------------------
+JpaConfig.java
+
+java/com/example/demo/config/JpaConfig.java
+
+package com.example.demo.config;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.init.DataSourceInitializer;
+import org.springframework.jdbc.datasource.init.DatabasePopulator;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+@Configuration
+@EntityScan(basePackages = {"com.example.demo.domain.entity"})
+@EnableJpaRepositories(basePackages = {"com.example.demo.domain.repository"})
+public class JpaConfig {
+    @Autowired
+    private DataSource dataSource;
+
+    @Bean
+    LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
+        entityManagerFactoryBean.setDataSource(dataSource);
+        entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        entityManagerFactoryBean.setPackagesToScan("com.example.demo.domain.entity");
+
+        Properties jpaProperties = new Properties();
+
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.hbm2ddl.auto", "update");                         // 필요에 따라 'create', 'validate' 등으로 변경
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect"); // 사용 중인 DB에 맞게 변경
+        properties.put("hibernate.show_sql", true);
+        properties.put("hibernate.format_sql", true);
+
+        properties.put("hibernate.hibernate.jdbc.batch_size", 1000);
+        properties.put("hibernate.hibernate.order_inserts", true);
+        properties.put("hibernate.order_updates", true);
+        properties.put("hibernate.jdbc.batch_versioned_data", true);
+        entityManagerFactoryBean.setJpaPropertyMap(properties);
+
+        return entityManagerFactoryBean;
+    }
+
+
+    //애플리케이션 시작 시 데이터베이스 초기화
+    @Bean
+    public DataSourceInitializer dataSourceInitializer() {
+        DataSourceInitializer initializer = new DataSourceInitializer();
+        initializer.setDataSource(dataSource);
+        initializer.setDatabasePopulator(databasePopulator());
+        return initializer;
+    }
+
+    //schema.sql과 data.sql 스크립트를 실행
+    private DatabasePopulator databasePopulator() {
+        //Spring Framework에서 제공하는 클래스로, 외부 리소스에 정의된 SQL 스크립트를 사용하여 데이터베이스를 초기화하거나 정리하는 데 사용
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+        //src/main/resources 디렉토리에 위치한 SQL 스크립트를 로드
+        Resource schemaScript = new ClassPathResource("schema.sql");
+        Resource dataScript = new ClassPathResource("data.sql");
+        populator.addScript(schemaScript);
+        populator.addScript(dataScript);
+        return populator;
+    }
+
+}
+
 
 
 
