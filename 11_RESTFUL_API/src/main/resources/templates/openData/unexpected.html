@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>대구 돌발 사고 정보 실시간 조회</h1>
+    <hr/>
+    <th:block th:each="item:${list}">
+            <div th:text="${item.LOCATION}"></div>
+            <div th:text="${item.INCIDENTTITLE}"></div>
+            <div th:text="${item.LOGDATE}"></div>
+            <div th:text="${item.TROUBLEGRADE}"></div>
+            <div th:text="${item.STARTDATE}"></div>
+            <div th:text="${item.INCIDENTSUBCODE}"></div>
+            <div th:text="${item.LINKID}"></div>
+            <div th:text="${item.REPORTDATE}"></div>
+            <div th:text="${item.ENDDATE}"></div>
+            <div th:text="${item.COORDX}"></div>
+            <div th:text="${item.INCIDENTCODE}"></div>
+            <div th:text="${item.INCIDENTID}"></div>
+            <div th:text="${item.COORDY}"></div>
+            <div th:text="${item.TRAFFICGRADE}"></div>
+    </th:block>
+
+</body>
+</html>

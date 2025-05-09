@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS tbl_a(id int primary key, pw int not null);
