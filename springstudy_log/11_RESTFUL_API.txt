@@ -374,7 +374,7 @@ public class OpenData01Controller {
 
 실행하고
 
-http://localhost:8090/openData/unexpected 접속
+http://localhost:8090/openData/unexpected 접속.
 
 조회 잘 되는지 확인
 
