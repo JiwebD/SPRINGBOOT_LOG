@@ -1,0 +1,648 @@
+스프링부트 thymeleaf 공부 시작
+
+이전에 공부했던 09_RESTCONTROLLER 복 붙
+파일명 10_THYMELEAF로 바꾸기
+
+--------------
+https://start.spring.io/ 접속
+
+project - Gradle - Groovy
+
+Language - Java
+
+Spring Boot - 3.4.5
+
+Packaging - Jar
+
+Java - 21
+
+dependencies
+thymeleaf 추가 build.gradle에 복붙
+//THYMELEAF
+implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' 
+
+
+
+--------------
+application.properties 복붙
+
+# THYMELEAF SETTING
+spring.thymeleaf.prefix:classpath:/templates/
+# JSP랑 함께 사용할꺼면 경로 설정 해줘야함.
+spring.thymeleaf.view-names:th/*
+spring.thymeleaf.suffix:.html
+spring.thymeleaf.mode: HTML5
+spring.thymeleaf.cache:false
+
+
+
+--------------------------------------------------------
+test1
+
+--------------
+생성
+10_THYMELEAF/src/main/resources/templates/th/test1.html 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>TEST1</h1>
+</body>
+</html>
+
+--------------
+생성
+10_THYMELEAF/src/main/java/com/example/demo/controller/ThymeleafTestController.java
+
+package com.example.demo.controller;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@Slf4j
+@RequestMapping("/th")  //templates 기본경로에서 /th
+public class ThymeleafTestController {
+
+    @GetMapping("/test1")
+    public void test1(){
+        log.info("GET /th/test1....");
+    }
+
+}
+
+
+실행해서
+http://localhost:8090/th/test1 접속 되는지 확인
+
+
+
+
+--------------------------------------------------------
+
+--------------
+
+10_THYMELEAF/src/main/java/com/example/demo/controller/ThymeleafTestController.java
+
+
+@Controller
+@Slf4j
+@RequestMapping("/th")  //templates 기본경로에서 /th
+public class ThymeleafTestController {
+
+    @GetMapping("/test1")
+    public void test1(Model model){
+        log.info("GET /th/test1....");
+        model.addAttribute("name","hong");
+    }
+
+}
+
+
+
+--------------
+
+10_THYMELEAF/src/main/resources/templates/th/test1.html 
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>TEST1</h1>
+    NAME : <span th:text="${name}"></span> <hr>
+</body>
+</html>
+
+
+
+실행해서 잘 나오는지 확인.
+
+
+--------------------------------------------------------
+
+--------------
+
+10_THYMELEAF/src/main/java/com/example/demo/controller/ThymeleafTestController.java
+
+
+@Controller
+@Slf4j
+@RequestMapping("/th")  //templates 기본경로에서 /th
+public class ThymeleafTestController {
+
+    @GetMapping("/test1")
+    public void test1(Model model){
+        log.info("GET /th/test1....");
+        model.addAttribute("name","hong");
+        MemoDto memo = new MemoDto();
+        memo.setId(111);
+        memo.setText("aaa");
+        memo.setWriter("aaa@naver.com");
+        model.addAttribute("memo",memo);
+    }
+
+}
+
+
+
+--------------
+
+10_THYMELEAF/src/main/resources/templates/th/test1.html 
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>TEST1</h1>
+    NAME : <span th:text="${name}"></span> <hr/>
+    MEMO : <span th:text="${memo}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.id}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.text}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.writer}"></span> <hr/>
+</body>
+</html>
+
+
+
+실행해서 잘 나오는지 확인.
+
+
+
+
+--------------------------------------------------------
+분기처리
+--------------
+
+10_THYMELEAF/src/main/java/com/example/demo/controller/ThymeleafTestController.java
+
+
+@Controller
+@Slf4j
+@RequestMapping("/th")  //templates 기본경로에서 /th
+public class ThymeleafTestController {
+
+    @GetMapping("/test1")
+    public void test1(Model model){
+        log.info("GET /th/test1....");
+        model.addAttribute("name","hong");
+        MemoDto memo = new MemoDto();
+        memo.setId(111);
+        memo.setText("aaa");
+        memo.setWriter("aaa@naver.com");
+        model.addAttribute("memo",memo);
+        
+        //분기처리실습
+        model.addAttribute("isAuth","true");
+    }
+
+}
+
+
+
+--------------
+
+10_THYMELEAF/src/main/resources/templates/th/test1.html 
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>TEST1</h1>
+    NAME : <span th:text="${name}"></span> <hr/>
+    MEMO : <span th:text="${memo}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.id}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.text}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.writer}"></span> <hr/>
+
+    <!--  분기처리  -->
+    <th:block th:if="${isAuth}">
+        <div>로그인 상태입니다</div>
+    </th:block>
+
+    <th:block th:unless="${isAuth}">
+        <div>로그아웃 상태입니다</div>
+    </th:block>
+</body>
+</html>
+
+
+
+실행해서 잘 나오는지 확인.
+
+ThymeleafTestController.java에 두가지 경우 분기 결과 확인
+
+        model.addAttribute("isAuth","true");
+	로그인 상태입니다.
+        model.addAttribute("isAuth","false");
+	로그아웃 상태입니다
+
+
+
+
+
+
+	
+
+--------------------------------------------------------
+반복문
+--------------
+memo 테이블
+
+id	text
+1	aaa
+2	bbb
+3	ccc
+4	ddd
+
+
+--------------
+10_THYMELEAF/src/main/java/com/example/demo/controller/ThymeleafTestController.java
+
+
+@Controller
+@Slf4j
+@RequestMapping("/th")  //templates 기본경로에서 /th
+public class ThymeleafTestController {
+
+    @Autowired
+    private MemoRepository memoRepository;
+
+    @GetMapping("/test1")
+    public void test1(Model model){
+        log.info("GET /th/test1....");
+        model.addAttribute("name","hong");
+        MemoDto memo = new MemoDto();
+        memo.setId(111);
+        memo.setText("aaa");
+        memo.setWriter("aaa@naver.com");
+        model.addAttribute("memo",memo);
+        
+        //분기처리실습
+        model.addAttribute("isAuth","false");
+
+        //반복문 실습
+        List<Memo> memoList = memoRepository.findAll();
+        model.addAttribute("memoList",memoList);
+    }
+
+}
+
+
+
+--------------
+
+10_THYMELEAF/src/main/resources/templates/th/test1.html 
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>TEST1</h1>
+    NAME : <span th:text="${name}"></span> <hr/>
+    MEMO : <span th:text="${memo}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.id}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.text}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.writer}"></span> <hr/>
+
+    <!--  분기처리  -->
+    <th:block th:if="${isAuth}">
+        <div>로그인 상태입니다</div>
+    </th:block>
+
+    <th:block th:unless="${isAuth}">
+        <div>로그아웃 상태입니다</div>
+    </th:block>
+
+    <!--  반복문  -->
+    <th:block>
+        <div th:each="memo:${memoList}">
+            <span th:text="${memo.id}"></span> :
+            <span th:text="${memo.text}"></span>
+        </div>
+    </th:block>
+</body>
+</html>
+
+
+
+실행해서 잘 나오는지 확인.
+
+
+
+
+--------------------------------------------------------
+링크연결
+
+--------------
+10_THYMELEAF/src/main/java/com/example/demo/controller/ThymeleafTestController.java
+
+
+@Controller
+@Slf4j
+@RequestMapping("/th")  //templates 기본경로에서 /th
+public class ThymeleafTestController {
+
+    @Autowired
+    private MemoRepository memoRepository;
+
+    @GetMapping("/test1")
+    public void test1(Model model){
+        log.info("GET /th/test1....");
+        model.addAttribute("name","hong");
+        MemoDto memo = new MemoDto();
+        memo.setId(111);
+        memo.setText("aaa");
+        memo.setWriter("aaa@naver.com");
+        model.addAttribute("memo",memo);
+        
+        //분기처리실습
+        model.addAttribute("isAuth","false");
+
+        //반복문 실습
+        List<Memo> memoList = memoRepository.findAll();
+        model.addAttribute("memoList",memoList);
+
+    }
+
+    @GetMapping("/param1")
+    public void param1(@ModelAttribute MemoDto memoDto){
+        log.info("GET /th/param1..." + memoDto);
+    }
+    @GetMapping("/param2/{id}/{text}/{writer}")
+    public void param2(@ModelAttribute MemoDto memoDto){
+        log.info("GET /th/param2..." + memoDto);
+    }
+
+}
+
+
+
+--------------
+
+10_THYMELEAF/src/main/resources/templates/th/test1.html 
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>TEST1</h1>
+    NAME : <span th:text="${name}"></span> <hr/>
+    MEMO : <span th:text="${memo}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.id}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.text}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.writer}"></span> <hr/>
+
+    <!--  분기처리  -->
+    <th:block th:if="${isAuth}">
+        <div>로그인 상태입니다</div>
+    </th:block>
+
+    <th:block th:unless="${isAuth}">
+        <div>로그아웃 상태입니다</div>
+    </th:block>
+
+    <!--  반복문  -->
+    <th:block>
+        <div th:each="memo:${memoList}">
+            <span th:text="${memo.id}"></span> :
+            <span th:text="${memo.text}"></span>
+        </div>
+    </th:block>
+    <hr/>
+
+    <a th:href="@{/th/param1(id=${memo.id},text='aaa',writer='bbb')}">이동하기</a> |
+    <a th:href="@{/th/param2/{id}/{text}/{writer}(id=${memo.id},text='aaa',writer='bbb')}">이동하기2</a>
+
+</body>
+</html>
+
+
+
+실행해서 이동하기 버튼 눌렀을때
+http://localhost:8090/th/param1?id=111&text=aaa&writer=bbb 로 이동 잘 되는지 확인
+
+이동하기2 버튼 눌렀을때
+
+http://localhost:8090/th/param2/111/aaa/bbb 로 이동 잘 되는지 확인
+
+
+
+
+
+--------------------------------------------------------
+script 확인
+
+--------------
+10_THYMELEAF/src/main/java/com/example/demo/controller/ThymeleafTestController.java
+
+
+
+--------------
+
+10_THYMELEAF/src/main/resources/templates/th/test1.html 
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>TEST1</h1>
+    NAME : <span th:text="${name}"></span> <hr/>
+    MEMO : <span th:text="${memo}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.id}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.text}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.writer}"></span> <hr/>
+
+    <!--  분기처리  -->
+    <th:block th:if="${isAuth}">
+        <div>로그인 상태입니다</div>
+    </th:block>
+
+    <th:block th:unless="${isAuth}">
+        <div>로그아웃 상태입니다</div>
+    </th:block>
+
+    <!--  반복문  -->
+    <th:block>
+        <div th:each="memo:${memoList}">
+            <span th:text="${memo.id}"></span> :
+            <span th:text="${memo.text}"></span>
+        </div>
+    </th:block>
+    <hr/>
+
+    <a th:href="@{/th/param1(id=${memo.id},text='aaa',writer='bbb')}">이동하기</a> |
+    <a th:href="@{/th/param2/{id}/{text}/{writer}(id=${memo.id},text='aaa',writer='bbb')}">이동하기2</a>
+
+    <script th:inline="javascript">
+        const name = [[ ${name} ]];
+        console.log('name',name);
+
+        const memo = [[ ${memo} ]];
+        console.log('memo',memo);
+
+        const memoList = [[ ${memoList} ]];
+        console.log('memoList',memoList);
+
+    </script>
+</body>
+</html>
+
+실행해서 console에 
+
+name hong
+test1:51 memo {id: 111, text: 'aaa', writer: 'aaa@naver.com', createAt: null}
+test1:54 memoList (4) [{…}, {…}, {…}, {…}]
+
+잘 나오는지 확인
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------
+test2 header , footer 를 insert , replace 해보기
+
+--------------
+생성
+10_THYMELEAF/src/main/resources/templates/th/test2.html
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <!-- 헤더영역 -->
+    <!-- insert : 태그 안에 삽입. -->
+    <div th:insert="~{th/fragments/header::headerFragment}"></div>
+    <h1>TEST2 PAGE</h1>
+    <!-- 푸터영역 -->
+    <!-- replace : 태그 안에 삽입하는게 아니라 새로만듬 태그를 바꿔버림. -->
+    <div th:replace="~{th/fragments/footer::footerFragment}"></div>
+
+</body>
+</html>
+
+--------------
+생성
+10_THYMELEAF/src/main/resources/templates/th/fragments/header.html
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+  <header th:fragment="headerFragment">
+    <h1>헤더영역!</h1>
+  </header>
+
+</body>
+</html>
+
+--------------
+생성
+10_THYMELEAF/src/main/resources/templates/th/fragments/footer.html
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<footer th:fragment="footerFragment">
+  <h1>푸터영역!</h1>
+</footer>
+
+</body>
+</html>
+
+
+--------------
+10_THYMELEAF/src/main/java/com/example/demo/controller/ThymeleafTestController.java
+
+package com.example.demo.controller;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@Slf4j
+@RequestMapping("/th")  //templates 기본경로에서 /th
+public class ThymeleafTestController {
+
+    @GetMapping("/test1")
+    public void test1(){
+        log.info("GET /th/test1....");
+    }
+
+}
+
+
+
+실행해서
+http://localhost:8090/th/test2 접속 해서
+헤더 , 푸터 , 잘 나오는지 확인
+
+insert 결과
+
+<div>
+  <header>
+    <h1>헤더영역!</h1>
+  </header>
+</div>
+
+--
+
+replace 결과
+
+<footer>
+  <h1>푸터영역!</h1>
+</footer>
+
+
+
+
+
+
