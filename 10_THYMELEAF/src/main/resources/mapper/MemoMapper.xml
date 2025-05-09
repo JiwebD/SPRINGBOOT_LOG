@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 자바 Mapper 인터페이스와 XML Mapper를 연결하기 위한 설정 -->
+<mapper namespace="com.example.demo.domain.mapper.MemoMapper">
+
+	<insert id="insertXml" useGeneratedKeys="true" keyProperty="id">
+		<selectKey keyProperty="id" order="AFTER" resultType="int">
+			select
+			max(id) + 1 as id from tbl_memo
+		</selectKey>
+		insert into tbl_memo (id, text) values (#{id}, #{text})
+	</insert>
+
+	<!-- <insert id="insertXml"> insert into tbl_memo (id, text) values (#{id}, 
+		#{text}) </insert> -->
+
+	<update id="updateXml">
+		update tbl_memo set text=#{text} where id=#{id}
+	</update>
+
+	<delete id="deleteXml">
+		delete from tbl_memo where id=#{id}
+	</delete>
+
+	<!-- 나가는거 들어가는거 -->
+	<select id="selectAtXml"
+		resultType="com.example.demo.domain.dto.MemoDto" parameterType="int">
+		select *
+		from tbl_memo where id=#{id}
+	</select>
+
+	<select id="selectAllXml"
+		resultType="com.example.demo.domain.dto.MemoDto">
+		select * from tbl_memo
+	</select>
+
+	<select id="selectAllResultMapXml" resultType="java.util.Map">
+		select * from tbl_memo
+	</select>
+	
+	
+	
+	
+	<!-- 동적 쿼리 -->
+	<select id="Select_if_xml" parameterType="java.util.Map"
+		resultType="java.util.Map">
+		select * from tbl_memo
+		<if test="type!=null and type.equals('text')">
+			where text like concat('%',#{keyword},'%')
+		</if>
+	</select>
+
+	<select id="Select_when_xml" parameterType="java.util.Map"
+		resultType="java.util.Map">
+		select * from tbl_memo
+		<if test="type!=null">
+			where
+			<choose>
+				<when test="type.equals('id')">
+					id like concat('%',#{keyword},'%')
+				</when>
+				<when test="type.equals('text')">
+					text like concat('%',#{keyword},'%')
+				</when>
+				<when test="type.equals('writer')">
+					writer like concat('%',#{keyword},'%')
+				</when>
+				<otherwise>
+					createAt &lt;= #{keyword}
+				</otherwise>
+
+			</choose>
+		</if>
+
+	</select>
+
+</mapper>

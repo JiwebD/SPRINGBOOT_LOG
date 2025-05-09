@@ -1,0 +1,793 @@
+--------------------------------------------------------
+--------------------------------------------------------
+세팅
+https://start.spring.io/ 접속
+
+project - Gradle - Groovy
+
+Language - Java
+
+Spring Boot - 3.4.5
+
+Packaging - Jar
+
+Java - 21
+
+Dependencies 추가
+Spring Web
+Lombok
+Thymeleaf
+
+GENERATE 
+
+demo 압축 풀기 해서
+
+폴더이름 11_RESTFUL_API로 변경
+
+idea . 실행
+
+gradle 설정
+
+빌드 및 실행
+IntelliJ IDEA
+
+Gradle
+Gradle JVM: 21.0.2확인
+
+프로젝트
+모듈 설정에서
+프로젝트 , sdk 확인
+
+
+-------
+application.properties
+
+spring.application.name=demo
+server.port=8090
+
+-------
+build.gradle
+
+dependencies에 추가
+	//REST
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.19.0'
+
+<<전체코드>>
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	//THYMELEAF
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	//WEB
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	//LOMBOK
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	//REST
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0'
+
+	//TEST
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+}
+
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+
+
+
+------------------------------------------------
+공공데이터 포털 접속
+로그인하기.
+
+
+
+
+대구광역시 북구_안심음식점 지정 현황 들어가서 활용신청 눌러서 활용신청
+
+대구광역시_돌발 교통정보 조회 서비스(신) 활용신청
+
+
+기상청_단기예보 ((구)_동네예보) 조회서비스  활용신청
+초단기실황조회 미리보기
+dataType JSON
+base_date 오늘 날짜로 지정 ex)20250509
+base_time 0600
+
+
+
+대구광역시_대구버스정보시스템 활용신청
+
+
+
+-----------------------------------------------
+대구광역시_돌발 교통정보 조회 서비스(신) 활용신청
+
+대구돌발정보 미리보기
+----
+요청변수(Request Parameter)
+serviceKey 일반 인증키(Encoding) 복붙
+pageNo 1
+numOfRows 10
+----
+미리보기 클릭하면 페이지 열림
+
+https://apis.data.go.kr/6270000/service/rest/dgincident?serviceKey=HauU5iw%2FVTPuszdg%2BY3%2BwC8FzxKs16gfBMhMYJtewiNUT85RF7xqD11yKfXPY6NePG3YzZd3eqYEaE7uypOriQ%3D%3D&pageNo=1&numOfRows=10
+
+
+요청변수(Request Parameter) 
+OpenData1Controller.java에다가 넣어줄꺼임.
+
+serviceKey는 일반 인증키(Decoding) 넣을꺼임
+
+추가로 url도 넣어줄꺼임.
+ String url = "https://apis.data.go.kr/6270000/service/rest/dgincident";
+
+---------
+11_RESTFUL_API/src/main/java/com/example/demo/C01OpenData/OpenData1Controller.java
+
+
+package com.example.demo.C01OpenData;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+@Slf4j
+@RequestMapping("/openData")
+public class OpenData01Controller {
+
+    String url = "https://apis.data.go.kr/6270000/service/rest/dgincident";
+    String serviceKey = "xYZ80mMcU8S57mCCY/q8sRsk7o7G8NtnfnK7mVEuVxdtozrl0skuhvNf34epviHrru/jiRQ41FokE9H4lK0Hhg==";
+    String pageNo = "1";
+    String numOfRows = "10";
+
+    @GetMapping("/unexpected")
+    public void unexpected(){
+        
+        //01 서버요청정보 확인(URL /KEY / etc Parameter)
+        url+="?serviceKey=" + serviceKey;
+        url+="&pageNo=" + pageNo;
+        url+="&numOfRows=" + numOfRows;
+
+        //02 요청 헤더 설정(x)
+        
+        //03 요청 바디 설정(x)
+        
+        //04 요청 작업 이후 결과 확인
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response =
+        restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+        System.out.println(response.getBody());
+        
+        //05 기타 가공처리
+        
+    }
+
+}
+
+실행하고
+
+http://localhost:8090/openData/unexpected 접속
+
+console에
+{"body":{"items":{"item":[{"LOCATION":null,"INCIDENTTITLE":"<사고> 경부고속도로 달성군칠곡군 달성군칠곡군 기점방향  고장","LOGDATE":"20250509122404","TROUBLEGRADE":"2","STARTDATE":"20250509134310","INCIDENTSUBCODE":"8","LINKID":"1570892200","REPORTDATE":"20250509134310","ENDDATE":"20250509141310","COORDX":128.4636,"INCIDENTCODE":"1","INCIDENTID":"L91153190055","COORDY":35.9379,"TRAFFICGRADE":"02"},{"LOCATION":"대구 남구 중앙대로31길 13","INCIDENTTITLE":"<공사> 삼각지길 대명가든맨션아파트 영대병원앞교차로 1차로 주의운전 하수도/배수로 작업","LOGDATE":"20250509084203","TROUBLEGRADE":"2","STARTDATE":"20250509100300","INCIDENTSUBCODE":"4","LINKID":"1530019400","REPORTDATE":"20250509100338","ENDDATE":"20250509235900","COORDX":128.589552742768,"INCIDENTCODE":"2","INCIDENTID":"L93153181766","COORDY":35.8470437053214,"TRAFFICGRADE":"02"},{"LOCATION":"대구광역시 남구 명덕로 120","INCIDENTTITLE":"<사고> 명덕로 계명네거리 남산동2321 3차로 주의운전 고장 차량","LOGDATE":"20250509122604","TROUBLEGRADE":"2","STARTDATE":"20250509134700","INCIDENTSUBCODE":"8","LINKID":"1500003300","REPORTDATE":"20250509134745","ENDDATE":"20250509160000","COORDX":128.5833268,"INCIDENTCODE":"1","INCIDENTID":"L93153190119","COORDY":35.8561771,"TRAFFICGRADE":"02"},{"LOCATION":"대구 수성구 달구벌대로 지하 2584","INCIDENTTITLE":"<공사> 달구벌대로 만촌네거리 남부빌딩 1차로 주의운전 도로공사","LOGDATE":"20250509122904","TROUBLEGRADE":"2","STARTDATE":"20250509135000","INCIDENTSUBCODE":"255","LINKID":"1550008200","REPORTDATE":"20250509135011","ENDDATE":"20250509142000","COORDX":128.6452549,"INCIDENTCODE":"2","INCIDENTID":"L93153190238","COORDY":35.8589349,"TRAFFICGRADE":"02"}]},"numOfRows":"10","pageNo":"1","totalCount":"4"},"header":{"resultCode":"00","resultMsg":"NORMAL_SERVICE"}}
+
+복사해서
+구글에 json to java 검색해서
+
+바꿔주고 복붙해주기
+public -> private static 으로 변경
+
+
+
+package com.example.demo.C01OpenData;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+@Slf4j
+@RequestMapping("/openData")
+public class OpenData01Controller {
+    //대구광역시_돌발 교통정보 조회 서비스(신)
+    String url = "https://apis.data.go.kr/6270000/service/rest/dgincident";
+    String serviceKey = "xYZ80mMcU8S57mCCY/q8sRsk7o7G8NtnfnK7mVEuVxdtozrl0skuhvNf34epviHrru/jiRQ41FokE9H4lK0Hhg==";
+    String pageNo = "1";
+    String numOfRows = "10";
+
+    @GetMapping("/unexpected")
+    public void unexpected(Model model){
+        //01 서버요청정보 확인(URL /KEY / etc Parameter)
+        url+="?serviceKey=" + serviceKey;
+        url+="&pageNo=" + pageNo;
+        url+="&numOfRows="+numOfRows;
+
+        //02 요청 헤더 설정(x)
+
+        //03 요청 바디 설정(x)
+
+        //04 요청 작업 이후 결과 확인
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Root> response =
+                restTemplate.exchange(url, HttpMethod.GET,null, Root.class);
+        System.out.println(response);
+
+        //05 기타 가공처리
+//        if(response.get)
+
+        //뷰 전달
+        Root root = response.getBody();
+        Body body = root.getBody();
+        Items items = body.getItems();
+        List<Item> list = items.getItem();
+        list.stream().forEach(System.out::println);
+
+        model.addAttribute("list" , list);
+    }
+
+    //----------------------------------------
+    @Data
+    private static class Body{
+        public Items items;
+        public String numOfRows;
+        public String pageNo;
+        public String totalCount;
+    }
+    @Data
+    private static class Header{
+        public String resultCode;
+        public String resultMsg;
+    }
+    @Data
+    private static class Item{
+        @JsonProperty("LOCATION")
+        public String LOCATION;
+        @JsonProperty("INCIDENTTITLE")
+        public String INCIDENTTITLE;
+        @JsonProperty("LOGDATE")
+        public String LOGDATE;
+        @JsonProperty("TROUBLEGRADE")
+        public String TROUBLEGRADE;
+        @JsonProperty("STARTDATE")
+        public String STARTDATE;
+        @JsonProperty("INCIDENTSUBCODE")
+        public String INCIDENTSUBCODE;
+        @JsonProperty("LINKID")
+        public String LINKID;
+        @JsonProperty("REPORTDATE")
+        public String REPORTDATE;
+        @JsonProperty("ENDDATE")
+        public String ENDDATE;
+        @JsonProperty("COORDX")
+        public double COORDX;
+        @JsonProperty("INCIDENTCODE")
+        public String INCIDENTCODE;
+        @JsonProperty("INCIDENTID")
+        public String INCIDENTID;
+        @JsonProperty("COORDY")
+        public double COORDY;
+        @JsonProperty("TRAFFICGRADE")
+        public String TRAFFICGRADE;
+    }
+    @Data
+    private static class Items{
+        public ArrayList<Item> item;
+    }
+    @Data
+    private static class Root{
+        public Body body;
+        public Header header;
+    }
+
+
+}
+
+
+-------------------
+11_RESTFUL_API/src/main/resources/templates/openData/unexpected.html
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>대구 돌발 사고 정보 실시간 조회</h1>
+    <hr/>
+    <th:block th:each="item:${list}">
+            <div th:text="${item.LOCATION}"></div>
+            <div th:text="${item.INCIDENTTITLE}"></div>
+            <div th:text="${item.LOGDATE}"></div>
+            <div th:text="${item.TROUBLEGRADE}"></div>
+            <div th:text="${item.STARTDATE}"></div>
+            <div th:text="${item.INCIDENTSUBCODE}"></div>
+            <div th:text="${item.LINKID}"></div>
+            <div th:text="${item.REPORTDATE}"></div>
+            <div th:text="${item.ENDDATE}"></div>
+            <div th:text="${item.COORDX}"></div>
+            <div th:text="${item.INCIDENTCODE}"></div>
+            <div th:text="${item.INCIDENTID}"></div>
+            <div th:text="${item.COORDY}"></div>
+            <div th:text="${item.TRAFFICGRADE}"></div>
+    </th:block>
+
+</body>
+</html>
+
+
+
+
+실행하고
+
+http://localhost:8090/openData/unexpected 접속
+
+조회 잘 되는지 확인
+
+
+
+-----------------------------------------------
+참고문서 보고 해보기
+
+
+기상청_단기예보 ((구)_동네예보) 조회서비스  활용신청
+
+
+참고문서 받아서
+
+요청메시지
+http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst
+사용
+
+
+
+-----
+
+11_RESTFUL_API/src/main/java/com/example/demo/C01OpenData/OpenData02Controller.java
+
+package com.example.demo.C01OpenData;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@Slf4j
+@RequestMapping("/openData")
+public class OpenData02Controller {
+    //대구광역시_돌발 교통정보 조회 서비스(신)
+    String url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst";
+    String serviceKey = "xYZ80mMcU8S57mCCY/q8sRsk7o7G8NtnfnK7mVEuVxdtozrl0skuhvNf34epviHrru/jiRQ41FokE9H4lK0Hhg==";
+    String pageNo = "1";
+    String numOfRows = "10";
+    String dataType = "JSON";
+    String base_date = "20250509";
+    String base_time = "1600";
+    String nx = "89";
+    String ny = "90";
+
+    @GetMapping("/forcast")
+    public void forcast(Model model){
+        log.info("GET /openData/forcast...");
+        //01 서버 정보
+        url+="?serviceKey=" + serviceKey;
+        url+="&pageNo=" + pageNo;
+        url+="&numOfRows="+numOfRows;
+        url+="&dataType="+dataType;
+        url+="&base_date="+base_date;
+        url+="&base_time="+base_time;
+        url+="&nx="+nx;
+        url+="&ny="+ny;
+
+        //02 요청 헤더 설정(x)
+
+        //03 요청 바디 설정(x)
+
+        //04 요청 -> 응답 확인
+        RestTemplate rt = new RestTemplate();
+        ResponseEntity<String> response =
+                rt.exchange(url, HttpMethod.GET,null, String.class);
+        System.out.println(response.getBody());
+
+        //05 기타 가공처리
+//        if(response.get)
+
+        //뷰 전달
+
+    }
+
+    
+}
+
+
+실행해서 
+
+http://localhost:8090/openData/forcast 접속
+
+console에
+
+{"response":{"header":{"resultCode":"00","resultMsg":"NORMAL_SERVICE"},"body":{"dataType":"JSON","items":{"item":[{"baseDate":"20250509","baseTime":"1600","category":"PTY","nx":89,"ny":90,"obsrValue":"0"},{"baseDate":"20250509","baseTime":"1600","category":"REH","nx":89,"ny":90,"obsrValue":"92"},{"baseDate":"20250509","baseTime":"1600","category":"RN1","nx":89,"ny":90,"obsrValue":"1"},{"baseDate":"20250509","baseTime":"1600","category":"T1H","nx":89,"ny":90,"obsrValue":"15.6"},{"baseDate":"20250509","baseTime":"1600","category":"UUU","nx":89,"ny":90,"obsrValue":"-1.3"},{"baseDate":"20250509","baseTime":"1600","category":"VEC","nx":89,"ny":90,"obsrValue":"86"},{"baseDate":"20250509","baseTime":"1600","category":"VVV","nx":89,"ny":90,"obsrValue":"0"},{"baseDate":"20250509","baseTime":"1600","category":"WSD","nx":89,"ny":90,"obsrValue":"1.4"}]},"pageNo":1,"numOfRows":10,"totalCount":8}}}
+
+확인
+
+복사해서
+json to java 로 변환하고 
+OpenData02Controller.java에 붙여넣기 변환 코드 public -> private static으로 변경
+
+String -> Root 로 변경 , response.getBody() -> response 변경
+
+ ResponseEntity<Root> response =
+                rt.exchange(url, HttpMethod.GET,null, Root.class);
+        System.out.println(response);
+
+
+
+--------
+
+11_RESTFUL_API/src/main/java/com/example/demo/C01OpenData/OpenData02Controller.java
+
+
+package com.example.demo.C01OpenData;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@Slf4j
+@RequestMapping("/openData")
+public class OpenData02Controller {
+    //대구광역시_돌발 교통정보 조회 서비스(신)
+    String url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst";
+    String serviceKey = "xYZ80mMcU8S57mCCY/q8sRsk7o7G8NtnfnK7mVEuVxdtozrl0skuhvNf34epviHrru/jiRQ41FokE9H4lK0Hhg==";
+    String pageNo = "1";
+    String numOfRows = "10";
+    String dataType = "JSON";
+    String base_date = "20250509";
+    String base_time = "1600";
+    String nx = "89";
+    String ny = "90";
+
+    @GetMapping("/forcast")
+    public void forcast(Model model){
+        log.info("GET /openData/forcast...");
+        //01 서버 정보
+        url+="?serviceKey=" + serviceKey;
+        url+="&pageNo=" + pageNo;
+        url+="&numOfRows="+numOfRows;
+        url+="&dataType="+dataType;
+        url+="&base_date="+base_date;
+        url+="&base_time="+base_time;
+        url+="&nx="+nx;
+        url+="&ny="+ny;
+
+        //02 요청 헤더 설정(x)
+
+        //03 요청 바디 설정(x)
+
+        //04 요청 -> 응답 확인
+        RestTemplate rt = new RestTemplate();
+        ResponseEntity<Root> response =
+                rt.exchange(url, HttpMethod.GET,null, Root.class);
+        System.out.println(response);
+
+        //05 기타 가공처리
+//        if(response.get)
+
+        //뷰 전달 가공처리
+        Root root = response.getBody();
+        Response rs = root.getResponse();
+        Body body = rs.getBody();
+        Items items = body.getItems();
+        List<Item> list = items.getItem();
+        list.stream().forEach(System.out::println);
+
+    }
+
+    //----------------------------------------
+    @Data
+    private static class Body{
+        public String dataType;
+        public Items items;
+        public int pageNo;
+        public int numOfRows;
+        public int totalCount;
+    }
+
+    @Data
+    private static class Header{
+        public String resultCode;
+        public String resultMsg;
+    }
+
+    @Data
+    private static class Item{
+        public String baseDate;
+        public String baseTime;
+        public String category;
+        public int nx;
+        public int ny;
+        public String obsrValue;
+    }
+
+    @Data
+    private static class Items{
+        public ArrayList<Item> item;
+    }
+
+    @Data
+    private static class Response{
+        public Header header;
+        public Body body;
+    }
+
+    @Data
+    private static class Root{
+        public Response response;
+    }
+
+
+
+
+
+}
+
+
+
+실행해서 
+http://localhost:8090/openData/forcast
+접속
+
+console에 
+
+<200 OK OK,OpenData02Controller.Root(response=OpenData02Controller.Response(header=OpenData02Controller.Header(resultCode=00, resultMsg=NORMAL_SERVICE), body=OpenData02Controller.Body(dataType=JSON, items=OpenData02Controller.Items(item=[OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=PTY, nx=89, ny=90, obsrValue=0), OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=REH, nx=89, ny=90, obsrValue=92), OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=RN1, nx=89, ny=90, obsrValue=0), OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=T1H, nx=89, ny=90, obsrValue=15.8), OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=UUU, nx=89, ny=90, obsrValue=-0.6), OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=VEC, nx=89, ny=90, obsrValue=90), OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=VVV, nx=89, ny=90, obsrValue=0), OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=WSD, nx=89, ny=90, obsrValue=0.7)]), pageNo=1, numOfRows=10, totalCount=8))),[Content-Language:"ko-KR", Set-Cookie:"JSESSIONID=I9UZM1Gny2jgKK6nkpO9q0cGnczou0n5ySDL8dQQ7sDRmQeTlfn6zQGjDK3kuN2V.amV1c19kb21haW4vbmV3c2t5Mw==; Path=/1360000/VilageFcstInfoService_2.0; HttpOnly; Domain=apis.data.go.kr", Access-Control-Allow-Origin:"*", Content-Type:"application/json;charset=UTF-8", Content-Length:"897", Date:"Fri, 09 May 2025 08:12:35 GMT", Server:"NIA API Server"]>
+OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=PTY, nx=89, ny=90, obsrValue=0)
+OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=REH, nx=89, ny=90, obsrValue=92)
+OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=RN1, nx=89, ny=90, obsrValue=0)
+OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=T1H, nx=89, ny=90, obsrValue=15.8)
+OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=UUU, nx=89, ny=90, obsrValue=-0.6)
+OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=VEC, nx=89, ny=90, obsrValue=90)
+OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=VVV, nx=89, ny=90, obsrValue=0)
+OpenData02Controller.Item(baseDate=20250509, baseTime=1700, category=WSD, nx=89, ny=90, obsrValue=0.7)
+
+
+잘 나오는가 확인.
+
+
+
+
+
+-------------
+11_RESTFUL_API/src/main/java/com/example/demo/C01OpenData/OpenData02Controller.java
+
+@RestController -> @Controller 로 바꾸기.
+
+       model.addAttribute("list" , list); 추가
+
+
+
+
+package com.example.demo.C01OpenData;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+@Slf4j
+@RequestMapping("/openData")
+public class OpenData02Controller {
+    //대구광역시_돌발 교통정보 조회 서비스(신)
+    String url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst";
+    String serviceKey = "xYZ80mMcU8S57mCCY/q8sRsk7o7G8NtnfnK7mVEuVxdtozrl0skuhvNf34epviHrru/jiRQ41FokE9H4lK0Hhg==";
+    String pageNo = "1";
+    String numOfRows = "10";
+    String dataType = "JSON";
+    String base_date = "20250509";
+    String base_time = "1600";
+    String nx = "89";
+    String ny = "90";
+
+    @GetMapping("/forcast")
+    public void forcast(Model model){
+        log.info("GET /openData/forcast...");
+        //01 서버 정보
+        url+="?serviceKey=" + serviceKey;
+        url+="&pageNo=" + pageNo;
+        url+="&numOfRows="+numOfRows;
+        url+="&dataType="+dataType;
+        url+="&base_date="+base_date;
+        url+="&base_time="+base_time;
+        url+="&nx="+nx;
+        url+="&ny="+ny;
+
+        //02 요청 헤더 설정(x)
+
+        //03 요청 바디 설정(x)
+
+        //04 요청 -> 응답 확인
+        RestTemplate rt = new RestTemplate();
+        ResponseEntity<Root> response =
+                rt.exchange(url, HttpMethod.GET,null, Root.class);
+        System.out.println(response);
+
+        //05 기타 가공처리
+//        if(response.get)
+
+        //뷰 전달 가공처리
+        Root root = response.getBody();
+        Response rs = root.getResponse();
+        Body body = rs.getBody();
+        Items items = body.getItems();
+        List<Item> list = items.getItem();
+        list.stream().forEach(System.out::println);
+
+        model.addAttribute("list" , list);
+
+    }
+
+    //----------------------------------------
+    @Data
+    private static class Body{
+        public String dataType;
+        public Items items;
+        public int pageNo;
+        public int numOfRows;
+        public int totalCount;
+    }
+
+    @Data
+    private static class Header{
+        public String resultCode;
+        public String resultMsg;
+    }
+
+    @Data
+    private static class Item{
+        public String baseDate;
+        public String baseTime;
+        public String category;
+        public int nx;
+        public int ny;
+        public String obsrValue;
+    }
+
+    @Data
+    private static class Items{
+        public ArrayList<Item> item;
+    }
+
+    @Data
+    private static class Response{
+        public Header header;
+        public Body body;
+    }
+
+    @Data
+    private static class Root{
+        public Response response;
+    }
+
+
+
+
+
+}
+
+
+-------------
+11_RESTFUL_API/src/main/resources/templates/openData/forcast.html
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>초단기실황조회</h1>
+    <hr/>
+    <th:block th:each="item:${list}">
+        발표일자 : <span th:text="${item.baseDate}"></span> <br/>
+        baseTime : <span th:text="${item.baseTime}"></span> <br/>
+        자료구분코드 : <span th:text="${item.category}"></span> <br/>
+        예보지점 X 좌표 : <span th:text="${item.nx}"></span> <br/>
+        예보지점 Y 좌표 : <span th:text="${item.ny}"></span> <br/>
+        실황 값 : <span th:text="${item.obsrValue}"></span>
+        <hr/>
+    </th:block>
+
+</body>
+</html>
+
+
+실행해서 http://localhost:8090/openData/forcast로 접속
+
+값 잘 읽어오는지 확인.
