@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>TEST1</h1>
+    NAME : <span th:text="${name}"></span> <hr/>
+    MEMO : <span th:text="${memo}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.id}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.text}"></span> <hr/>
+    MEMO.ID : <span th:text="${memo.writer}"></span> <hr/>
+
+    <!--  분기처리  -->
+    <th:block th:if="${isAuth}">
+        <div>로그인 상태입니다</div>
+    </th:block>
+
+    <th:block th:unless="${isAuth}">
+        <div>로그아웃 상태입니다</div>
+    </th:block>
+
+    <!--  반복문  -->
+    <th:block>
+        <div th:each="memo:${memoList}">
+            <span th:text="${memo.id}"></span> :
+            <span th:text="${memo.text}"></span>
+        </div>
+    </th:block>
+    <hr/>
+
+    <a th:href="@{/th/param1(id=${memo.id},text='aaa',writer='bbb')}">이동하기</a> |
+    <a th:href="@{/th/param2/{id}/{text}/{writer}(id=${memo.id},text='aaa',writer='bbb')}">이동하기2</a>
+
+    <script th:inline="javascript">
+        const name = [[ ${name} ]];
+        console.log('name',name);
+
+        const memo = [[ ${memo} ]];
+        console.log('memo',memo);
+
+        const memoList = [[ ${memoList} ]];
+        console.log('memoList',memoList);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/"> <!-- 최근 경로로 해줘야 최근 기능까지 적용됨 -->
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <!-- 헤더영역 -->
+    <!-- insert : 태그 안에 삽입. -->
+    <div th:insert="~{th/fragments/header::headerFragment}"></div>
+    <h1>TEST2 PAGE</h1>
+    <!-- 푸터영역 -->
+    <!-- replace : 태그 안에 삽입하는게 아니라 새로만듬 태그를 바꿔버림. -->
+    <div th:replace="~{th/fragments/footer::footerFragment}"></div>
+
+</body>
+</html>
