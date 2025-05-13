@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,17 +22,22 @@ import java.util.List;
 @RequestMapping("/openData")
 public class OpenData01Controller {
     //대구광역시_돌발 교통정보 조회 서비스(신)
+
     String url = "https://apis.data.go.kr/6270000/service/rest/dgincident";
-    String serviceKey = "";
+    String serviceKey = "HauU5iw%2FVTPuszdg%2BY3%2BwC8FzxKs16gfBMhMYJtewiNUT85RF7xqD11yKfXPY6NePG3YzZd3eqYEaE7uypOriQ%3D%3D";
     String pageNo = "1";
     String numOfRows = "10";
 
+
     @GetMapping("/unexpected")
-    public void unexpected(Model model){
+    public void unexpected(Model model) throws URISyntaxException {
         //01 서버요청정보 확인(URL /KEY / etc Parameter)
         url+="?serviceKey=" + serviceKey;
         url+="&pageNo=" + pageNo;
         url+="&numOfRows="+numOfRows;
+
+        // 2. URI 객체로 변환하여 자동 인코딩 처리
+        URI uri = new URI(url);
 
         //02 요청 헤더 설정(x)
 
@@ -39,7 +46,7 @@ public class OpenData01Controller {
         //04 요청 작업 이후 결과 확인
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Root> response =
-                restTemplate.exchange(url, HttpMethod.GET,null, Root.class);
+                restTemplate.exchange(uri, HttpMethod.GET,null, Root.class);
         System.out.println(response);
 
         //05 기타 가공처리
