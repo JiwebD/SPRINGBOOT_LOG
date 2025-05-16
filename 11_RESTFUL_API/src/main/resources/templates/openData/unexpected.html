@@ -8,6 +8,7 @@
     <h1>대구 돌발 사고 정보 실시간 조회</h1>
     <hr/>
     <th:block th:each="item:${list}">
+        <p>
             <div th:text="${item.LOCATION}"></div>
             <div th:text="${item.INCIDENTTITLE}"></div>
             <div th:text="${item.LOGDATE}"></div>
@@ -22,6 +23,8 @@
             <div th:text="${item.INCIDENTID}"></div>
             <div th:text="${item.COORDY}"></div>
             <div th:text="${item.TRAFFICGRADE}"></div>
+        </p>
+        <hr/>
     </th:block>
 
 </body>

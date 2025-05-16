@@ -21,17 +21,19 @@ public class C01GoogleMailAPIController {
     @GetMapping("/req")
     @ResponseBody
     public void req(
-                    @RequestParam("email") String email,
-                    @RequestParam("subject") String subject,
-                    @RequestParam("text") String text
-                    ) {
-        log.info("GET /google/mail/req.." + javaMailSender);
+            @RequestParam("email") String email,
+            @RequestParam("text") String text
+    )
+    {
+        log.info("GET /google/mail/req.."+javaMailSender);
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject(subject);
+        message.setSubject("[WEB발신] 메일 테스트입니다-!");
         message.setText(text);
 
         javaMailSender.send(message);
     }
+
+
 }

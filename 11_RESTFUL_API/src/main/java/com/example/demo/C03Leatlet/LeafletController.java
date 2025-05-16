@@ -1,4 +1,4 @@
-package com.example.demo.C06Google;
+package com.example.demo.C03Leatlet;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @Slf4j
-@RequestMapping("/google/cal")
-public class C02GoogleCalendarAPIController {
-    @GetMapping
-    public void get(){
-        log.info("GET /google/cal...");
+@RequestMapping("/leaflet")
+public class LeafletController {
+    @GetMapping("index")
+    public void index(){
+        log.info("GET /leaflet/index...");
     }
 }

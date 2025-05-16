@@ -21,37 +21,38 @@ import java.util.ArrayList;
 @Slf4j
 @RequestMapping("/open/weather")
 public class OpenWeatherController {
-
+    //https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key}
     @GetMapping("/get/{lat}/{lon}")
     public ResponseEntity<Root> get(@PathVariable String lat , @PathVariable String lon) throws UnsupportedEncodingException {
         log.info("GET /open/weather/get....");
-        String url ="https://api.openweathermap.org/data/2.5/weather";
-//        String lat = "";
-//        String lon = "";
-        String appid = "fe56feb46246f09eb9c123fe754ede8f";
-
+        String url="https://api.openweathermap.org/data/2.5/weather";
+//        String lat="";
+//        String lon="";
+        String serviceKey="";
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(url)
-                .queryParam("appid", URLEncoder.encode(appid, "UTF-8"))
+                .queryParam("appid", URLEncoder.encode(serviceKey, "UTF-8")) // 인코딩 꼭 필요
                 .queryParam("lat", lat)
-                .queryParam("lon",lon)
-                .build(true) //자동 인코딩 방지 -> true 설정 중요
+                .queryParam("lon", lon)
+                .build(true) // 자동 인코딩 방지 → true 설정 중요
                 .toUri();
-
-        System.out.println(uri);
 
         //요청 헤더 x
         //요청 바디 x
 
         //요청 -> 응답
         RestTemplate rt = new RestTemplate();
-        ResponseEntity<Root> response = rt.exchange(uri, HttpMethod.GET, null , Root.class);
+        ResponseEntity<Root> response = rt.exchange(uri, HttpMethod.GET,null,Root.class);
         System.out.println(response.getBody());
 
         return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
 
-    }
 
+
+
+
+
+    }
 
     // import com.fasterxml.jackson.databind.ObjectMapper; // version 2.11.1
 // import com.fasterxml.jackson.annotation.JsonProperty; // version 2.11.1
@@ -113,5 +114,6 @@ Root root = om.readValue(myJsonString, Root.class); */
         public double speed;
         public int deg;
     }
+
 
 }

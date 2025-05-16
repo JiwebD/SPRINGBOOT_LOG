@@ -2021,7 +2021,7 @@ var qsfnz = _dereq_('../common/qsfnz');
 var msfnz = _dereq_('../common/msfnz');
 var iqsfnz = _dereq_('../common/iqsfnz');
 /*
-  reference:
+  reference:  
     "Cartographic Projection Procedures for the UNIX Environment-
     A User's Manual" by Gerald I. Evenden,
     USGS Open File Report 90-284and Release 4 Interim Reports (2003)
@@ -2333,10 +2333,10 @@ exports.forward = function(p) {
   else {
 
     // Point is in the opposing hemisphere and is unprojectable
-    // We still need to return a reasonable point, so we project
-    // to infinity, on a bearing
+    // We still need to return a reasonable point, so we project 
+    // to infinity, on a bearing 
     // equivalent to the northern hemisphere equivalent
-    // This is a reasonable approximation for short shapes and lines that
+    // This is a reasonable approximation for short shapes and lines that 
     // straddle the horizon.
 
     x = this.x0 + this.infinity_dist * cosphi * Math.sin(dlon);

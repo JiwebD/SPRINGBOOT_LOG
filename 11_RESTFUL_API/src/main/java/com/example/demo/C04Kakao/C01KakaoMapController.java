@@ -13,4 +13,9 @@ public class C01KakaoMapController {
     public void map_01(){
         log.info("GET /kakao/map/01...");
     }
+
+    @GetMapping("/02")
+    public void map_02(){
+        log.info("GET /kakao/map/02...");
+    }
 }

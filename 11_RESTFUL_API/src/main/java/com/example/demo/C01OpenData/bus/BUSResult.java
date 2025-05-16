@@ -2,6 +2,9 @@ package com.example.demo.C01OpenData.bus;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 
 import java.util.List;
 

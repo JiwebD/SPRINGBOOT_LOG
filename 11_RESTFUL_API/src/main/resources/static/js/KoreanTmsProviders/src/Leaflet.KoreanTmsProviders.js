@@ -24,7 +24,7 @@
       //bounds: L.bounds([-30000-Math.pow(2,19)*2, -60000-Math.pow(2, 19)*2], [-30000+Math.pow(2,19)*3, -60000+Math.pow(2, 19)*3])
 
 	  bounds: L.bounds([-30000-Math.pow(2,19)*4, -60000], [-30000+Math.pow(2,19)*5, -60000+Math.pow(2,19)*5])
-    }
+    }          
  	);
 
 	//네이버지도 좌표계 정의
@@ -38,7 +38,7 @@
       bounds: L.bounds([90112, 1192896], [1990673, 2761664])
     }
 	);
-
+  
 	//vWorld 지도 좌표계 정의
 	L.Proj.CRS.VWorld = L.CRS.EPSG3857;
 	//[-20037508.34, -20037508.34, 20037508.34, 20037508.34],
@@ -90,7 +90,7 @@
 				}
 				provider = {
 					url: variant.url || provider.url,
-					crs: variant.crs || provider.crs,
+					crs: variant.crs || provider.crs,					
 					options: L.Util.extend({}, provider.options, variantOptions)
 				};
 			} else if (typeof provider.url === 'function') {
@@ -147,7 +147,7 @@
 			url: 'http://map{s}.daumcdn.net/map_2d/1807hsm/L{z}/{y}/{x}.png',
 			crs: L.Proj.CRS.Daum,
 			options: {
-				maxZoom: 13,
+				maxZoom: 13, 
 				minZoom: 0,
 				zoomReverse: true, //다음지도는 레벨 13(小축척) -> 레벨 0(大축척)으로 줄어듦
 				zoomOffset: 1,
@@ -171,22 +171,22 @@
 					url: 'http://boundary.map.daum.net/mapserver/db/HBOUN_L/L{z}/{y}/{x}.png'
 				},
 				Physical: { //지형도(Terrain Map)
-					url: 'http://map{s}.daumcdn.net/map_shaded_relief/3.00/L{z}/{y}/{x}.png'
-				},
+					url: 'http://map{s}.daumcdn.net/map_shaded_relief/3.00/L{z}/{y}/{x}.png' 
+				},				
 				Hybrid: { //위성지도+라벨 중첩지도(Hybrid)
-					url: 'http://map{s}.daumcdn.net/map_hybrid/1807hsm/L{z}/{y}/{x}.png'
+					url: 'http://map{s}.daumcdn.net/map_hybrid/1807hsm/L{z}/{y}/{x}.png'								 
 				},
 				SkyView: { //위성지도(Satellite Only) : Daum Map에서는 스카이뷰로 사용됨
-					url: 'http://map{s}.daumcdn.net/map_skyview/L{z}/{y}/{x}.jpg?v=160114'
+					url: 'http://map{s}.daumcdn.net/map_skyview/L{z}/{y}/{x}.jpg?v=160114' 
 				},
 				Bicycle: { //자전거도로지도(Bicycle)
-					url: 'http://map{s}.daumcdn.net/map_bicycle/2d/6.00/L{z}/{y}/{x}.png'
+					url: 'http://map{s}.daumcdn.net/map_bicycle/2d/6.00/L{z}/{y}/{x}.png' 
 				},
 				Traffic: { //교통상황지도(Traffic)
-					url: 'http://r{s}.maps.daum-img.net/mapserver/file/realtimeroad/L{z}/{y}/{x}.png'
+					url: 'http://r{s}.maps.daum-img.net/mapserver/file/realtimeroad/L{z}/{y}/{x}.png' 
 				},
 				RoadView: { //로드뷰)
-					url: 'http://map{s}.daumcdn.net/map_roadviewline/7.00/L{z}/{y}/{x}.png'
+					url: 'http://map{s}.daumcdn.net/map_roadviewline/7.00/L{z}/{y}/{x}.png' 
 				},
 				FineDust: { //미세먼지지도
 					url: 'http://airinfo.map.kakao.com/mapserver/file/airinfo_pm10/T/L{z}/{y}/{x}.png'
@@ -217,9 +217,9 @@
 		//네이버지도 Tile URL
 		NaverMap: {
 			url: 'https://simg.pstatic.net/onetile/get/195/0/0/{z}/{x}/{y}/bl_vc_bg/ol_vc_an',
-			crs: L.Proj.CRS.Naver,
+			crs: L.Proj.CRS.Naver, 
 			options: {
-				maxZoom: 13,
+				maxZoom: 13, 
 				minZoom: 0,
 				zoomOffset: 1,
 				subdomains: '1234',
@@ -230,8 +230,8 @@
 			variants: {
 				Street: {}, //일반지도(Standard Road Map)
 				Satellite: { //위성지도(Satellite Only)
-					url: 'https://simg.pstatic.net/onetile/get/195/0/1/{z}/{x}/{y}/bl_st_bg'
-				},
+					url: 'https://simg.pstatic.net/onetile/get/195/0/1/{z}/{x}/{y}/bl_st_bg'					
+				}, 
 				Cadastral: { //지적편집도(Cadastral)
 					url: 'https://simg.pstatic.net/onetile/get/195/0/0/{z}/{x}/{y}/empty/ol_lp_cn'
 				},
@@ -254,12 +254,12 @@
 		},
 		//vWorld 지도 Tile URL
 		VWorld: {
-			//url: 'http://xdworld.vworld.kr:8080/2d/Base/201612/{z}/{x}/{y}.png',
+			//url: 'http://xdworld.vworld.kr:8080/2d/Base/201612/{z}/{x}/{y}.png', 
 			//url: 'http://xdworld.vworld.kr:8080/2d/Base/201710/{z}/{x}/{y}.png',
 			url: 'http://xdworld.vworld.kr:8080/2d/Base/service/{z}/{x}/{y}.png',
 			crs: L.Proj.CRS.VWorld,
 			options: {
-				maxZoom: 19,
+				maxZoom: 19, 
 				minZoom: 6,
 				continuousWorld: true,
 				attribution: 'Map data &copy; <strong>VWorld</strong>'
@@ -289,7 +289,7 @@
 			url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 			crs: L.Proj.CRS.OSM,
 			options: {
-				maxZoom: 19,
+				maxZoom: 19, 
 				minZoom: 0,
 				continuousWorld: true,
 				attribution: 'Map data &copy; <strong>OSM</strong>'
@@ -318,7 +318,7 @@
 			url: 'https://mt{s}.google.com/vt/lyrs=m&hl=kr&x={x}&y={y}&z={z}',
 			crs: L.Proj.CRS.Google,
 			options: {
-				maxZoom: 19,
+				maxZoom: 19, 
 				minZoom: 0,
 				subdomains: '0123',
 				continuousWorld: true,
@@ -346,7 +346,7 @@
 			url: 'http://topopentile{s}.tmap.co.kr/tms/1.0.0/hd_tile/{z}/{x}/{-y}.png',
 			crs: L.Proj.CRS.TMap,
 			options: {
-				maxZoom: 18,
+				maxZoom: 18, 
 				minZoom: 1,
 				subdomains: '123',
 				continuousWorld: false,
@@ -380,3 +380,4 @@
 
 	return L;
 }));
+
