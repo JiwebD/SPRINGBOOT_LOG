@@ -1,0 +1,725 @@
+스프링부트 시큐리티 01_INIT
+
+----
+세팅
+
+start.spring.io
+
+Project
+gradle-groovy
+
+language - java
+
+spring Boot - 3.4.5
+
+Project Metadata/packaging - jar
+java - 21
+
+Dependencies 추가
+Spring Web 
+Lombok 
+Thymeleaf 
+JDBC API 
+MySQL Driver
+Spring Data JPA
+Spring Security
+
+
+GENERATE
+
+12SPRING_SECURITY이름으로 압축풀기
+
+idea .  실행
+
+파일 > 설정 > gradle > 빌드실행 , 테스트 실행 - IntelliJ IDEA
+gradle jvm - 21버전 선택
+
+프로젝트 우클릭 모듈설정 열기 
+프로젝트 설정>프로젝트
+SDK - 21 선택
+언어수준 - SDK 디폴트
+
+
+----
+build.gradle
+의존성 구분할 수 있게 정리
+dependencies {
+	//WEB
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	//THYMELEAF
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	//DB
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	//LOMBOK
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	//SECURITY
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+	
+	//TEST
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+
+----
+application.java
+
+spring.application.name=demo
+server.port=8090
+
+#UTF-8 Setting
+spring.servlet.filter.encoding.filter-name=encodingFilter
+spring.servlet.filter.encoding.filter-class=org.springframework.web.filter.CharacterEncodingFilter
+spring.servlet.filter.encoding.init-param.encoding=UTF-8
+spring.servlet.filter.encoding.init-param.forceEncoding=true
+spring.servlet.filter.encoding.url-pattern=/*
+
+
+----
+패키지 구조 만들기
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/config
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/config/auth
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/controller
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/domain
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/domain/dto
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/domain/entity
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/domain/repository
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/properties
+
+
+----
+
+실행해서 localhost:8090 접속하면
+http://localhost:8090/login 으로 가짐
+
+콘솔보면
+Using generated security password: d3a0d527-5a34-4cb9-881a-f179493e6a2f
+확인됨.
+
+http://localhost:8090/login에서
+Username : user
+Password : d3a0d527-5a34-4cb9-881a-f179493e6a2f
+입력하면 
+http://localhost:8090/페이지로 이동됨.
+http://localhost:8090/logout접속하면 로그아웃 됨.
+
+
+12SPRING_SECURITY/src/main/java/com/example/demo/config/DataSourceConfig.java
+
+package com.example.demo.config;
+
+import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
+
+@Configuration
+public class DataSourceConfig {
+
+//	HikariCP DataSource
+	@Bean
+	public HikariDataSource dataSource3() {
+		HikariDataSource dataSource = new HikariDataSource();
+		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+		dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/testdb");
+		dataSource.setUsername("root");
+		dataSource.setPassword("1234");
+
+		return dataSource;
+	}
+
+}
+
+
+
+
+----
+12SPRING_SECURITY/src/main/java/com/example/demo/config/JpaConfig.java
+
+package com.example.demo.config;
+
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.init.DataSourceInitializer;
+import org.springframework.jdbc.datasource.init.DatabasePopulator;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+@Configuration
+@EntityScan(basePackages = {"com.example.demo.domain.entity"})
+@EnableJpaRepositories
+(
+                basePackages ="com.example.demo.domain.repository",
+                transactionManagerRef = "jpaTransactionManager"
+)
+public class JpaConfig {
+    @Autowired
+    private DataSource dataSource;
+
+    @Bean
+    LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
+        entityManagerFactoryBean.setDataSource(dataSource);
+        entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        entityManagerFactoryBean.setPackagesToScan("com.example.demo.domain.entity");
+
+        Properties jpaProperties = new Properties();
+
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.hbm2ddl.auto", "update");                         // 필요에 따라 'create', 'validate' 등으로 변경
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect"); // 사용 중인 DB에 맞게 변경
+        properties.put("hibernate.show_sql", true);
+        properties.put("hibernate.format_sql", true);
+
+        properties.put("hibernate.hibernate.jdbc.batch_size", 1000);
+        properties.put("hibernate.hibernate.order_inserts", true);
+        properties.put("hibernate.order_updates", true);
+        properties.put("hibernate.jdbc.batch_versioned_data", true);
+        entityManagerFactoryBean.setJpaPropertyMap(properties);
+
+        return entityManagerFactoryBean;
+    }
+
+
+    //애플리케이션 시작 시 데이터베이스 초기화
+//    @Bean
+//    public DataSourceInitializer dataSourceInitializer() {
+//        DataSourceInitializer initializer = new DataSourceInitializer();
+//        initializer.setDataSource(dataSource);
+//        initializer.setDatabasePopulator(databasePopulator());
+//        return initializer;
+//    }
+
+    //schema.sql과 data.sql 스크립트를 실행
+//    private DatabasePopulator databasePopulator() {
+//        //Spring Framework에서 제공하는 클래스로, 외부 리소스에 정의된 SQL 스크립트를 사용하여 데이터베이스를 초기화하거나 정리하는 데 사용
+//        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+//        //src/main/resources 디렉토리에 위치한 SQL 스크립트를 로드
+//        Resource schemaScript = new ClassPathResource("schema.sql");
+//        Resource dataScript = new ClassPathResource("data.sql");
+//        populator.addScript(schemaScript);
+//        populator.addScript(dataScript);
+//        return populator;
+//    }
+
+}
+
+
+
+----
+12SPRING_SECURITY/src/main/java/com/example/demo/config/SecurityConfig.java
+
+package com.example.demo.config;
+
+
+import com.example.demo.config.auth.exceptionHandler.CustomAccessDeniedHandler;
+import com.example.demo.config.auth.exceptionHandler.CustomAuthenticationEntryPoint;
+import com.example.demo.config.auth.loginHandler.CustomLoginFailureHandler;
+import com.example.demo.config.auth.loginHandler.CustomLoginSuccessHandler;
+import com.example.demo.config.auth.logoutHandler.CustomLogoutHandler;
+import com.example.demo.config.auth.logoutHandler.CustomLogoutSuccessHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+	@Autowired
+	private CustomLoginSuccessHandler customLoginSuccessHandler;
+	@Autowired
+	private CustomLogoutHandler customLogoutHandler;
+	@Autowired
+	private CustomLogoutSuccessHandler customLogoutSuccessHandler;
+
+
+	@Bean
+	protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+		//CSRF비활성화
+		http.csrf((config)->{config.disable();});
+		//CSRF토큰 쿠키형태로 전달
+//		http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+		//권한체크
+		http.authorizeHttpRequests((auth)->{
+			auth.requestMatchers("/","/join","/login").permitAll();
+			auth.requestMatchers("/user").hasRole("USER");
+			auth.requestMatchers("/manager").hasRole("MANAGER");
+			auth.requestMatchers("/admin").hasRole("ADMIN");
+			auth.anyRequest().authenticated();
+		});
+
+		//로그인
+		http.formLogin((login)->{
+			login.permitAll();
+			login.loginPage("/login");
+			login.successHandler(customLoginSuccessHandler);
+			login.failureHandler(new CustomLoginFailureHandler());
+		});
+		//로그아웃
+		http.logout((logout)->{
+			logout.permitAll();
+			logout.addLogoutHandler(customLogoutHandler);
+			logout.logoutSuccessHandler(customLogoutSuccessHandler);
+		});
+		//예외처리
+
+		http.exceptionHandling((ex)->{
+			ex.authenticationEntryPoint(new CustomAuthenticationEntryPoint());
+			ex.accessDeniedHandler(new CustomAccessDeniedHandler());
+		});
+
+		return http.build();
+		
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+}
+
+
+
+----
+12SPRING_SECURITY/src/main/java/com/example/demo/config/TxConfig.java
+
+package com.example.demo.config;
+
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+
+@Configuration
+@EnableTransactionManagement
+public class TxConfig {
+    @Autowired
+    private DataSource dataSource;
+
+//    // 기본 TransactionManager
+//    @Bean(name = "dataSourceTransactionManager")
+//    public DataSourceTransactionManager transactionManager2() {
+//        //System.out.println("TX dataSrouce2 : " + dataSource2.toString());
+//        return new DataSourceTransactionManager(dataSource);
+//    }
+
+
+    //    JPA TransactionManager Settings
+    @Bean(name="jpaTransactionManager")
+    public JpaTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory);
+        transactionManager.setDataSource(dataSource);
+
+        return transactionManager;
+    }
+
+}
+
+
+
+
+----
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/controller/HomeController.java
+
+package com.example.demo.controller;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+@Slf4j
+public class HomeController {
+
+    @GetMapping("/")
+    public String home(){
+        log.info("GET /...");
+        return "home";
+    }
+}
+
+
+
+----
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/controller/UserController.java
+
+package com.example.demo.controller;
+
+import java.beans.PropertyEditorSupport;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import com.example.demo.domain.dto.UserDto;
+import com.example.demo.domain.entity.User;
+import com.example.demo.domain.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+
+import lombok.extern.slf4j.Slf4j;
+
+@Controller
+@Slf4j
+public class UserController {
+
+	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	@GetMapping("/login")
+	public void login() {
+		log.info("GET /login...");
+	}
+	
+//	@GetMapping("/user")
+//	public void user(Authentication authentication) {
+//		log.info("GET /user..." + authentication);
+//		log.info("name..." + authentication.getName());
+//		log.info("principal..." + authentication.getPrincipal());
+//		log.info("authorities..." + authentication.getAuthorities());
+//		log.info("details..." + authentication.getDetails());
+//		log.info("credential..." + authentication.getCredentials());
+//	}
+	
+//	@GetMapping("/user")
+//	public void user(@AuthenticationPrincipal Principal principal) {
+//		log.info("GET /user..." + principal);
+//	}
+	
+	@GetMapping("/user")
+	public void user(Model model) {
+		log.info("GET /user...");
+		Authentication authenticaton = 
+		SecurityContextHolder.getContext().getAuthentication();
+		log.info("authentication : " + authenticaton);
+		
+		model.addAttribute("auth",authenticaton);
+		
+	}
+	
+	@GetMapping("/manager")
+	public void manager() {
+		log.info("GET /manager...");	
+	}
+	@GetMapping("/admin")
+	public void admin() {
+		log.info("GET /admin...");	
+	}
+	
+	
+	
+	@GetMapping("/join")
+	public void join() {
+		log.info("GET /join..");
+	}
+
+	@PostMapping("/join")
+	public String join_post(UserDto dto, RedirectAttributes redirectAttributes ) {
+		log.info("POST /join.." + dto);
+
+		//DTO->ENTITY(DB저장) , ENTITY->DTO(뷰로전달)
+		dto.setPassword(  passwordEncoder.encode( dto.getPassword() ) );
+		userRepository.save(dto.toEntity());
+
+		boolean isJoin  = true;
+		if(isJoin) {
+			redirectAttributes.addFlashAttribute("message","회원가입 완료!");
+			return "redirect:/login";
+		}
+		else
+			return "join";
+	}
+
+}
+
+
+
+
+
+
+----
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/domain/dto/UserDto.java
+
+package com.example.demo.domain.dto;
+
+import java.time.LocalDate;
+
+import com.example.demo.domain.entity.User;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserDto {
+	private String username;
+	private String password;
+	private String role;
+	//DTO->ENTITY
+	public User toEntity(){
+		return User.builder()
+				.username(this.username)
+				.password(this.password)
+				.role("ROLE_USER")
+				.build();
+	}
+	//ENTITY->DTO
+	public static UserDto toDto(User user){
+		return UserDto.builder()
+					.username(user.getUsername())
+					.password(user.getPassword())
+					.role(user.getRole())
+					.build();
+	}
+}
+
+
+
+----
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/domain/entity/User.java
+
+package com.example.demo.domain.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+public class User {
+	@Id
+	private String username;
+	private String password;
+	private String role;
+}
+
+
+
+----
+12SPRING_SEUCURITY/01_INIT/src/main/java/com/example/demo/domain/repository/UserRepository.java
+
+package com.example.demo.domain.repository;
+
+import com.example.demo.domain.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface UserRepository extends JpaRepository<User,String> {
+}
+
+
+
+
+----
+12SPRING_SECURITY/src/main/resources/templates/home.html
+
+<html>
+<head>
+	<title>Home</title>
+</head>
+<body>
+<h1>HOME</h1>
+
+</body>
+</html>
+
+
+
+----
+12SPRING_SECURITY/src/main/resources/templates/join.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+	<form action="/join" method="post">
+		<div>
+			<h1>회원가입</h1>
+		</div>
+		<div>
+			<label>username : </label><span style="color:red;font-size:.7rem;" th:text="${username}"></span><br>
+			<input name="username" />
+		</div>
+		<div>
+			<label>password : </label><span style="color:red;font-size:.7rem;" th:text="${password}"></span><br>
+			<input name="password" />
+		</div>
+		<div>
+			<input type="submit" value="회원가입" />
+		</div>
+
+	
+	</form>
+</body>
+</html>
+
+----
+12SPRING_SECURITY/src/main/resources/templates/login.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h1>LOGIN</h1>
+	<form action="/login" method="post">
+		<div>
+			<label>USERNAME : </label>
+			<input name="username" />
+		</div>
+		<div>
+			<label>PASSWORD :</label>
+			<input name="password" type="password"/>
+		</div>
+		<button>로그인</button>
+<!--		 <input type="hidden" name="_csrf" value="${_csrf.token}" /> -->
+	</form>
+	<span th:text="${message}"></span>
+	<span th:text="${param.error}"></span>
+
+
+	
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+----
+12SPRING_SEUCURITY/01_INIT/src/main/resources/templates/admin.html
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h1>ADMIN</h1>
+	
+	<a href="/logout">로그아웃</a>
+</body>
+</html>
+
+
+----
+12SPRING_SEUCURITY/01_INIT/src/main/resources/templates/manager.html
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h1>MANAGER</h1>
+	
+	<a href="/logout">로그아웃</a>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+----
+12SPRING_SEUCURITY/01_INIT/src/main/resources/templates/user.html
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h1>USER</h1>
+	
+	
+	<div>
+		auth :  <span th:text="${auth}"></span>
+	</div>
+	<a href="/logout">로그아웃</a>
+</body>
+</html>
+
+
+
