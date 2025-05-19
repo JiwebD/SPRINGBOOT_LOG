@@ -2,6 +2,13 @@ springboot 시큐리티 02_OAUTH2 공부
 
 01_INIT 에서 이어서 시작
 
+
+client-id , client-secret , 
+네이버 - 네이버개발자센터 
+카카오 - 카카오개발자센터
+구글 - 구글클라우드 플랫폼
+  프로젝트 만들기 , Oauth구성 , OAuth 동의 화면 (클라이언트 , 대상) 설정 
+
 ----
 start.spring.io > add dependencies OAuth2 Client 추가 익스플로어 복붙 
 build.gradle
@@ -99,6 +106,9 @@ spring.security.oauth2.client.provider.naver.user-name-attribute=response
 spring.security.oauth2.client.registration.google.client-id=-
 spring.security.oauth2.client.registration.google.client-secret=-
 spring.security.oauth2.client.registration.google.scope=email,profile
+
+
+
 
 
 
@@ -241,10 +251,14 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
 
 
 ------
+
+12SPRING_SEUCURITY/02_OAUTH2/src/main/java/com/example/demo/config/auth/logoutHandler/CustomLogoutHandler.java
+
 package com.example.demo.config.auth.logoutHandler;
 
 
 
+import com.example.demo.config.auth.PrincipalDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -263,6 +277,16 @@ public class CustomLogoutHandler implements LogoutHandler {
 
 		log.info("CustomLogoutHandler's logout invoke");
 
+		PrincipalDetails principalDetails = (PrincipalDetails)authentication.getPrincipal();
+		String provider = principalDetails.getUserDto().getProvider();
+		if(provider!=null && provider.startsWith("kakao")){
+
+		}else if(provider!=null && provider.startsWith("naver")){
+
+		}else if(provider!=null && provider.startsWith("google")){
+
+		}
+
 		HttpSession session =  request.getSession();
 		if(session!=null)
 			session.invalidate();
@@ -270,6 +294,7 @@ public class CustomLogoutHandler implements LogoutHandler {
 	}
 
 }
+
 
 
 ------
@@ -280,9 +305,11 @@ package com.example.demo.config.auth.logoutHandler;
 import java.io.IOException;
 
 
+import com.example.demo.config.auth.PrincipalDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
@@ -293,14 +320,41 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 
+	@Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+	String KAKAO_CLIENT_ID;
+	@Value("${spring.security.oauth2.client.kakao.logout.redirect.uri}")
+	String KAKAO_LOGOUT_REDIRECT_URI;
+
+
 	@Override
 	public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
 			throws IOException, ServletException {
 		log.info("CustomLogoutSuccessHandler onLogoutSuccess invoke..");
+
+		//
+		PrincipalDetails principalDetails = (PrincipalDetails)authentication.getPrincipal();
+		String provider = principalDetails.getUserDto().getProvider();
+		if(provider!=null && provider.startsWith("kakao")){
+			response.sendRedirect("https://kauth.kakao.com/oauth/logout?client_id="+KAKAO_CLIENT_ID+"&logout_redirect_uri="+KAKAO_LOGOUT_REDIRECT_URI);
+			return ;
+		}else if(provider!=null && provider.startsWith("naver")){
+			//https://nid.naver.com/nidlogin.logout?returl=https://www.naver.com/
+			response.sendRedirect("https://nid.naver.com/nidlogin.logout?returl=https://www.naver.com/");
+			return ;
+
+		}else if(provider!=null && provider.startsWith("google")){
+			response.sendRedirect(("http://accounts.google.com/Logout"));
+			return ;
+
+		}
+
+
 		response.sendRedirect(request.getContextPath()+"/");
+
 	}
 
 }
+
 
 
 
@@ -397,6 +451,54 @@ public class NaverUserinfo implements OAuth2UserInfo {
         return id;
     }
 }
+
+
+
+
+--------
+12SPRING_SEUCURITY/02_OAUTH2/src/main/java/com/example/demo/config/auth/provider/GoogleUserinfo.java
+
+package com.example.demo.config.auth.provider;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Map;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class GoogleUserinfo implements OAuth2UserInfo {
+    private String id;
+    private Map<String,Object> attributes;
+
+    @Override
+    public String getName() {
+        return (String)attributes.get("name");
+    }
+
+    @Override
+    public String getEmail() {
+        return (String)attributes.get("email");
+    }
+
+    @Override
+    public String getProvider() {
+        return "google";
+    }
+
+    @Override
+    public String getProviderId() {
+        return this.id;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return Map.of();
+    }
+}
+
 
 
 
@@ -522,12 +624,14 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
 package com.example.demo.config.auth;
 
+import com.example.demo.config.auth.provider.GoogleUserinfo;
 import com.example.demo.config.auth.provider.KakaoUserInfo;
 import com.example.demo.config.auth.provider.NaverUserinfo;
 import com.example.demo.config.auth.provider.OAuth2UserInfo;
 import com.example.demo.domain.dto.UserDto;
 import com.example.demo.domain.entity.User;
 import com.example.demo.domain.repository.UserRepository;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -553,9 +657,9 @@ public class PrincipalDetailsOAuth2Service extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        System.out.println("PrincipalDetailsOAuth2Service's loadUser invoke..");
+//        System.out.println("PrincipalDetailsOAuth2Service's loadUser invoke..");
 //        System.out.println("userRequest : " + userRequest);
-//        System.out.println("userRequest.getClientRegistration() :"+ userRequest.getClientRegistration());
+        System.out.println("userRequest.getClientRegistration() :"+ userRequest.getClientRegistration());
 //        System.out.println("userRequest.getAccessToken() : "+ userRequest.getAccessToken());
 //        System.out.println("userRequest.getAdditionalParameters() : "+ userRequest.getAdditionalParameters());
 //        System.out.println("userRequest.getAccessToken().getTokenValue() : "+ userRequest.getAccessToken().getTokenValue());
@@ -595,6 +699,8 @@ public class PrincipalDetailsOAuth2Service extends DefaultOAuth2UserService {
 
         }else if(provider.startsWith("google")){
             //구글 로그인시
+            String id = (String)attributes.get("sub");
+            oAuth2UserInfo = new GoogleUserinfo(id,attributes);
 
 
         }
@@ -627,6 +733,8 @@ public class PrincipalDetailsOAuth2Service extends DefaultOAuth2UserService {
 
         //PrincipalDetails 전달
         PrincipalDetails principalDetails = new PrincipalDetails();
+        userDto.setProvider(provider);
+        userDto.setProviderId(oAuth2UserInfo.getProviderId());
         principalDetails.setUserDto(userDto);
         principalDetails.setAttributes(oAuth2User.getAttributes());
         principalDetails.setAccess_token(userRequest.getAccessToken().getTokenValue());
@@ -637,6 +745,7 @@ public class PrincipalDetailsOAuth2Service extends DefaultOAuth2UserService {
 
 
         return principalDetails;
+
     }
 }
 
@@ -1301,10 +1410,17 @@ public interface UserRepository extends JpaRepository<User,String> {
 	<div>
 		auth :  <span th:text="${auth}"></span>
 	</div>
+	<!--
+		카카오 로그아웃인지?
+		-->
 	<a href="/logout">로그아웃</a>
+	<!--
+		네이버/구글
+		1) 팝업창띄우고(숨겨놓는상태) 로그아웃처리
+		2) iframe 만들고 로그아웃처리
+		-->
 </body>
 </html>
-
 
 
 
