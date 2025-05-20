@@ -1,12 +1,16 @@
 package com.example.demo.config.auth.logoutHandler;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 
 import com.example.demo.config.auth.PrincipalDetails;
+import com.example.demo.config.auth.jwt.JwtProperties;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -27,7 +31,16 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 	@Override
 	public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
 			throws IOException, ServletException {
-		log.info("CustomLogoutSuccessHandler onLogoutSuccess invoke..");
+		log.info("CustomLogoutSuccessHandler onLogoutSuccess invoke.." + authentication);
+
+
+
+		//발급받은 ACCESSTOKEN 쿠키제거
+		Cookie cookie = new Cookie(JwtProperties.ACCESS_TOKEN_COOKIE_NAME,null);
+		cookie.setMaxAge(0);
+		cookie.setPath("/");
+		response.addCookie(cookie);
+
 
 		//
 		PrincipalDetails principalDetails = (PrincipalDetails)authentication.getPrincipal();
@@ -43,8 +56,9 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 		}else if(provider!=null && provider.startsWith("google")){
 			response.sendRedirect(("http://accounts.google.com/Logout"));
 			return ;
-
 		}
+
+
 
 
 		response.sendRedirect(request.getContextPath()+"/");
