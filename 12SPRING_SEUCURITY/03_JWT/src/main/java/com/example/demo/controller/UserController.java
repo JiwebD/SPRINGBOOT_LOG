@@ -28,17 +28,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserController {
 
-	@Autowired
-	private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-	@GetMapping("/login")
-	public void login() {
-		log.info("GET /login...");
-	}
-	
+    @GetMapping("/login")
+    public String login(Authentication authentication) {
+        log.info("GET /login...");
+
+        if(authentication!=null&& authentication.isAuthenticated()){
+            return "redirect:/";
+        }
+        return "login";
+    }
+
 //	@GetMapping("/user")
 //	public void user(Authentication authentication) {
 //		log.info("GET /user..." + authentication);
@@ -48,55 +53,54 @@ public class UserController {
 //		log.info("details..." + authentication.getDetails());
 //		log.info("credential..." + authentication.getCredentials());
 //	}
-	
+
 //	@GetMapping("/user")
 //	public void user(@AuthenticationPrincipal Principal principal) {
 //		log.info("GET /user..." + principal);
 //	}
-	
-	@GetMapping("/user")
-	public void user(Model model) {
-		log.info("GET /user...");
-		Authentication authenticaton = 
-		SecurityContextHolder.getContext().getAuthentication();
-		log.info("authentication : " + authenticaton);
-		
-		model.addAttribute("auth",authenticaton);
-		
-	}
-	
-	@GetMapping("/manager")
-	public void manager() {
-		log.info("GET /manager...");	
-	}
-	@GetMapping("/admin")
-	public void admin() {
-		log.info("GET /admin...");	
-	}
-	
-	
-	
-	@GetMapping("/join")
-	public void join() {
-		log.info("GET /join..");
-	}
 
-	@PostMapping("/join")
-	public String join_post(UserDto dto, RedirectAttributes redirectAttributes ) {
-		log.info("POST /join.." + dto);
+    @GetMapping("/user")
+    public void user(Model model) {
+        log.info("GET /user...");
+        Authentication authenticaton =
+                SecurityContextHolder.getContext().getAuthentication();
+        log.info("authentication : " + authenticaton);
 
-		//DTO->ENTITY(DB저장) , ENTITY->DTO(뷰로전달)
-		dto.setPassword(  passwordEncoder.encode( dto.getPassword() ) );
-		userRepository.save(dto.toEntity());
+        model.addAttribute("auth", authenticaton);
 
-		boolean isJoin  = true;
-		if(isJoin) {
-			redirectAttributes.addFlashAttribute("message","회원가입 완료!");
-			return "redirect:/login";
-		}
-		else
-			return "join";
-	}
+    }
+
+    @GetMapping("/manager")
+    public void manager() {
+        log.info("GET /manager...");
+    }
+
+    @GetMapping("/admin")
+    public void admin() {
+        log.info("GET /admin...");
+    }
+
+
+    @GetMapping("/join")
+    public void join() {
+        log.info("GET /join..");
+    }
+
+    @PostMapping("/join")
+    public String join_post(UserDto dto, RedirectAttributes redirectAttributes) {
+        log.info("POST /join.." + dto);
+
+        //DTO->ENTITY(DB저장) , ENTITY->DTO(뷰로전달)
+        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+        userRepository.save(dto.toEntity());
+
+        boolean isJoin = true;
+        if (isJoin) {
+            redirectAttributes.addFlashAttribute("message", "회원가입 완료!");
+            return "redirect:/login";
+        } else
+            return "join";
+    }
 
 }
 

@@ -36,6 +36,8 @@ public class SecurityConfig {
 	private UserRepository userRepository;
 	@Autowired
 	private JwtTokenProvider jwtTokenProvider;
+	@Autowired
+	private JwtAuthorizationFilter jwtAuthorizationFilter;
 
 
 	@Bean
@@ -85,7 +87,7 @@ public class SecurityConfig {
 
 
 		//JWT FILTER ADD 로그인 이후에 인증하기 위한코드
-		http.addFilterBefore(new JwtAuthorizationFilter(userRepository,jwtTokenProvider), LogoutFilter.class);
+		http.addFilterBefore(jwtAuthorizationFilter, LogoutFilter.class);
 
 		return http.build();
 

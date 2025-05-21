@@ -41,6 +41,10 @@ public class JwtTokenProvider {
         this.key = key;
     }
 
+    public Key getKey(){
+        return this.key;
+    }
+
     //SIGNATURE 저장
     @PostConstruct
     public void init() {
@@ -145,15 +149,16 @@ public class JwtTokenProvider {
     }
 
     // 토큰 정보를 검증하는 메서드
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token) throws ExpiredJwtException {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);
-//        }
-//        catch (ExpiredJwtException e) {
-//            log.info("Expired JWT Token", e);
+        }
+        catch (ExpiredJwtException e) {
+            log.info("Expired JWT Token", e);
+            throw new ExpiredJwtException(null,null,null);
 
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);

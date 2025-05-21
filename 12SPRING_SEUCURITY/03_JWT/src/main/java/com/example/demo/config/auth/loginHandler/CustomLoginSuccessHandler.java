@@ -29,6 +29,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	@Autowired
 	private JwtTokenRepository jwtTokenRepository;
+	
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -44,6 +45,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		cookie.setPath("/");
 		response.addCookie(cookie);
 
+
 		//JWTTOKEN DB 저장
 		JwtToken jwtToken = new JwtToken();
 		jwtToken.setAccessToken(tokenInfo.getAccessToken());
@@ -53,7 +55,6 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		jwtTokenRepository.save(jwtToken);
 
 
-		//		로그인 처리
 		//---------------------------------
 		//최초로그인(Client's AT x , DB x)
 		//---------------------------------
@@ -62,7 +63,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		//
 		//
 		//---------------------------------
-		//기존로그인(Client's AT o , DB o)
+		//기존로그인(Client's AT o , DB o)  JwtAuthorizationFilter에서 작업
 		//---------------------------------
 		//	- AT 만료 x -> 로그인 완료처리
 		//	- AT 만료 o -> RT x -> AT 갱신
